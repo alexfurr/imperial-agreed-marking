@@ -35,7 +35,7 @@ class agreedMarkingDraw
          switch ($action)
          {
             case "markStudent":
-               agreedMarkingActions::markStudent($assignmentID);
+               echo agreedMarkingActions::markStudent($assignmentID);
             break;
          }
 
@@ -56,7 +56,10 @@ class agreedMarkingDraw
          case "markStudent":
             $username = $_GET['username'];
 
-
+            $studentMeta = imperialQueries::getUserInfo($username);
+            $html.='<h3>'.$studentMeta['first_name'].' '.$studentMeta['last_name'].'</h3>';
+            $html.=imperialThemeDraw::drawBackButton("Back to student list", "?");
+            $html.='<hr/>';
             $html.=agreedMarkingDraw::drawMarkingGrid($assignmentID, $username);
          break;
 
@@ -78,24 +81,66 @@ class agreedMarkingDraw
 
    public static function drawStudentList($assignmentID)
    {
+
+      $thisUsername = $_SESSION['icl_username'];
+      $myStudentsArray = array();
       if(!current_user_can('edit_pages') )
       {
          return 'You do not have permission to view this page';
       }
+
+      // Get a list of all the students who have been marked, along with the people that have marked them
+
+      $masterMarkingStatus = agreedMarkingQueries::getAllAssignmentMarks($assignmentID);
+
+      $myMarkingCount = 0;
+      foreach ($masterMarkingStatus as $username => $markers)
+      {
+         if(in_array($thisUsername, $markers) )
+         {
+            $myMarkingCount++;
+            $myStudentsArray[] = $username;
+         }
+      }
+
       $html = '';
 
+      $html.='You have marked '.$myMarkingCount.' student(s)<hr/>';
+
       $html.= '<table id="assignmentStudentsTable">';
-      $html.= '<thead><tr><th>Student Name</th><th>Username</th><th>Status</th></tr></thead>';
+      $html.= '<thead><tr><th>Student Name</th><th>Username</th><th>Status</th><th>Marked</th><th>Score 1</th><th>Score 2</th><th>Averaged Score</th></tr></thead>';
 
       // Get the users
       $myStudents = agreedMarkingQueries::getAssignmentStudents();
 
-      foreach ($myStudents as $username => $studentMeta)
+      foreach ($myStudents as $studentUsername => $studentMeta)
       {
 
          $studentName =  $studentMeta['lastName'].', '.$studentMeta['firstName'];
 
-         $html.= '<tr><td><a href="?view=markStudent&assignmentID='.$assignmentID.'&username='.$username.'">'.$studentName.'</a></td><td>'.$username.'</td><td></td></tr>';
+         $myStatus = '';
+         if(in_array($studentUsername, $myStudentsArray) )
+         {
+            $myStatus= '<span class="successText">Marked by you</span>';
+         }
+
+         $thisMarkingCount = '<span class="greyText">0</span>';
+         if(array_key_exists($studentUsername, $masterMarkingStatus) )
+         {
+            $markersArray = $masterMarkingStatus[$studentUsername];
+            $thisMarkingCount = count($markersArray);
+         }
+
+         $html.= '<tr>';
+         $html.='<td><a href="?view=markStudent&assignmentID='.$assignmentID.'&username='.$studentUsername.'">'.$studentName.'</a></td>';
+         $html.='<td>'.$studentUsername.'</td>';
+         $html.='<td>'.$myStatus.'</td>';
+         $html.='<td>'.$thisMarkingCount.'</td>';
+         $html.='<td>-</td>';
+         $html.='<td>-</td>';
+         $html.='<td>-</td>';
+
+         $html.='</tr>';
       }
 
       $html.= '</table>';
@@ -108,8 +153,7 @@ class agreedMarkingDraw
             jQuery(\'#assignmentStudentsTable\').dataTable({
                "bAutoWidth": true,
                "bJQueryUI": true,
-               "sPaginationType": "full_numbers",
-               "iDisplayLength": 50, // How many numbers by default per page
+               "paging":   false,
             });
          }
 
@@ -130,6 +174,9 @@ class agreedMarkingDraw
       // Get the students marked grades
       $assessorUsername = $_SESSION['icl_username'];
       $savedMarks = agreedMarkingQueries::getUserMarks($assignmentID, $username);
+
+      // Get the scores
+      $finalMarks = agreedMarkingUtils::getFinalMarks($savedMarks);
 
       // Get the assessor count for this student
       $assessors = agreedMarkingQueries::getAssessorsForStudent($assignmentID, $username);
@@ -162,24 +209,61 @@ class agreedMarkingDraw
       // Get the current page URL
       $formAction = '?view=markStudent&myAction=markStudent&assignmentID='.$assignmentID.'&username='.$username;
       $formItemsArray = agreedMarkingQueries::getMarkingGrid();
+
+
       $html.='<form action="'.$formAction.'" method="post" class="imperial-form">';
-      foreach ($formItemsArray as $itemMeta)
+      foreach ($formItemsArray as $criteriaGroup)
       {
-         $description = $itemMeta['description'];
-         $itemType = $itemMeta['type'];
-         $options = $itemMeta['options'];
-         $thisID = $itemMeta['thisID'];
+         $groupName = $criteriaGroup['name'];
+         $groupWeighting='';
+         if(isset($criteriaGroup['weighting']) )
+         {
 
-         $args = array(
-            "description" => $description,
-            "itemType" => $itemType,
-            "options" => $options,
-            "savedMarks" => $savedMarks,
-            "thisID" => $thisID,
-            "assessors" => $assessors,
-         );
+            $groupWeighting = $criteriaGroup['weighting'];
+         }
 
-         $html.=agreedMarkingDraw::drawFormItem($args);
+         $groupCritiera = $criteriaGroup['criteria'];
+
+         if($groupWeighting==0)
+         {
+            $groupWeighting = '';
+         }
+         elseif($groupWeighting)
+         {
+            $groupWeighting = 'Weighting : '.$groupWeighting.'%';
+         }
+
+
+         $html.='<div class="cirteriaGroupWrap">';
+         $html.='<div class="criteriaGroupTitle">';
+         $html.='<div>'.$groupName.'</div>';
+         $html.='<div>'.$groupWeighting.'</div>';
+         $html.='</div>';
+
+         $html.='<div class="criteriaList">';
+         foreach ($groupCritiera as $itemMeta)
+         {
+
+            $description = $itemMeta['description'];
+            $itemType = $itemMeta['type'];
+            $options = $itemMeta['options'];
+            $thisID = $itemMeta['thisID'];
+
+            $args = array(
+               "description" => $description,
+               "itemType" => $itemType,
+               "options" => $options,
+               "savedMarks" => $savedMarks,
+               "thisID" => $thisID,
+               "assessors" => $assessors,
+            );
+
+            $html.=agreedMarkingDraw::drawFormItem($args);
+         }
+         $html.='</div>';
+
+         $html.='</div>';
+
 
       }
       $html.='<input type="submit" value="Submit" class="imperial-button">';
@@ -202,8 +286,18 @@ class agreedMarkingDraw
       $savedMarks = $args['savedMarks'];
       $thisID = $args['thisID'];
       $assessors = $args['assessors'];
+      $savedValue = '';
+      if(!is_array($savedMarks) )
+      {
+         $savedMarks = array();
+      }
+
 
       $thisAssessessorUsername = $_SESSION['icl_username'];
+      if(isset($savedMarks[$thisID][$thisAssessessorUsername]) )
+      {
+         $savedValue = $savedMarks[$thisID][$thisAssessessorUsername];
+      }
 
       $html = '<div class="agreedMarkingFormItem item_'.$itemType.'">';
       $html.='<div class="formItemDescription">'.$description.'</div>';
@@ -213,50 +307,67 @@ class agreedMarkingDraw
 
          case "radio":
             $optionNumber = 1;
-            if(isset($savedMarks[$thisID][$thisAssessessorUsername]) )
-            {
-               $thisValue = $savedMarks[$thisID][$thisAssessessorUsername];
-            }
+
+            $html.='<div class="formItemRadioWrap">';
             foreach ($options as $optionValue)
             {
+
+               $thisRadioID = $thisID.'_'.$optionNumber;
 
                $html.='<label for="'.$thisRadioID.'">';
                $html.='<span>'.$optionValue.'</span>';
                $html.='<span><input type="radio" name="'.$thisID.'" id="'.$thisRadioID.'" value="'.$optionNumber.'"';
-               if($optionNumber==$thisValue){$html.=' checked ';}
+               if($optionNumber==$savedValue){$html.=' checked ';}
                $html.='/></span></label>';
-
                $optionNumber++;
-
             }
+            $html.='</div>';
 
 
             //If there is a discrepenecy then Highlight this
-            $isAgreed = agreedMarkingUtils::checkDiscrepancy($thisID, $savedMarks);
-            if($isAgreed==true)
+            if(count($savedMarks)>=1 )
             {
-               $html.='AGREED';
-            }
-            else
-            {
-               $html.='NOT AGREED<br/>';
-
-               // Show the the values that have been saved
-               $theseSavedValues = $savedMarks[$thisID];
-
-               foreach ($theseSavedValues as $tempAssessorUsername => $tempMarks)
+               $html.='<h3>Marks from other assessors</h3>';
+               $isAgreed = agreedMarkingUtils::checkDiscrepancy($thisID, $savedMarks);
+               if($isAgreed==true)
                {
 
-                  if($thisAssessessorUsername <> $tempAssessorUsername)
+                  if(isset($savedMarks[$thisID] ) )
                   {
-                     $thisAssessorNameInfo = $assessors[$tempAssessorUsername];
-                     $thisAssessorName = $thisAssessorNameInfo['firstName'].' '.$thisAssessorNameInfo['lastName'];
+                     $theseSavedValues = $savedMarks[$thisID];
 
+                     foreach ($theseSavedValues as $tempAssessorUsername => $tempMarks)
+                     {
 
-                     $html.= $thisAssessorName.' gave the make : '.$tempMarks;
+                        if($thisAssessessorUsername <> $tempAssessorUsername)
+                        {
+                           $thisAssessorNameInfo = $assessors[$tempAssessorUsername];
+                           $thisAssessorName = $thisAssessorNameInfo['firstName'].' '.$thisAssessorNameInfo['lastName'];
+
+                           $html.= '<div class="imperial-feedback imperial-feedback-success">Marks give by '.$thisAssessorName.' : <strong>'.$tempMarks.'</strong></div>';
+                        }
+                     }
                   }
-               }
 
+               }
+               else
+               {
+                  // Show the the values that have been saved
+                  $theseSavedValues = $savedMarks[$thisID];
+
+                  foreach ($theseSavedValues as $tempAssessorUsername => $tempMarks)
+                  {
+
+                     if($thisAssessessorUsername <> $tempAssessorUsername)
+                     {
+                        $thisAssessorNameInfo = $assessors[$tempAssessorUsername];
+                        $thisAssessorName = $thisAssessorNameInfo['firstName'].' '.$thisAssessorNameInfo['lastName'];
+
+                        $html.= '<div class="imperial-feedback imperial-feedback-alert">Marks given by '.$thisAssessorName.' : <strong>'.$tempMarks.'</strong></div>';
+                     }
+                  }
+
+               }
             }
 
 
@@ -283,6 +394,11 @@ class agreedMarkingDraw
 
             }
 
+         break;
+
+
+         case "textarea":
+            $html.='<textarea class="agreedMarkingTextarea" name="'.$thisID.'" id="'.$thisID.'">'.$savedValue.'</textarea>';
          break;
 
       }

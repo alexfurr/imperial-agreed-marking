@@ -4,7 +4,6 @@ class agreedMarkingActions
    public static function markStudent($assignmentID)
 	{
 
-
       $feedback = '';
 
       // Get the current user ID
@@ -18,8 +17,8 @@ class agreedMarkingActions
       // Get the student username
 
       $assessorUsername = $_SESSION['icl_username'];
+      //$assessorUsername = 'aandi';
 
-      $assessorUsername = 'aandi';
       $studentUsername = $_GET['username'];
 
       //echo '$assessorUsername = '.$assessorUsername.'<br/>';
@@ -39,6 +38,7 @@ class agreedMarkingActions
       {
          $myFields="INSERT into $agreedMarkingUserMarks (assignmentID, username, assessorUsername, itemID, savedValue, dateSubmitted) ";
          $myFields.="VALUES (%d, %s, %s, %s, %s, %s)";
+
 
          $RunQry = $wpdb->query( $wpdb->prepare($myFields,
             $assignmentID,
@@ -70,7 +70,7 @@ class agreedMarkingActions
 
 
 		$feedback.='<div class="imperial-feedback imperial-feedback-success">';
-		$feedback.= '<h2>Marked</h2>';
+		$feedback.= 'Marks submitted';
 		$feedback.= '</div>';
 
     //  $feedback.=$feedbackReportStr;

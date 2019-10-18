@@ -4,7 +4,7 @@ class agreedMarking_db {
 
    // Was 0.6
 
-   var $DBversion = 0.1;
+   var $DBversion = 0.2;
 
 
 	//~~~~~
@@ -59,7 +59,7 @@ class agreedMarking_db {
       username varchar(255),
       assessorUsername varchar(255),
 		itemID varchar(255),
-		savedValue mediumint(9),
+		savedValue longtext,
 		PRIMARY KEY (ID),
       KEY studentMarks (username, assignmentID),
       KEY assessorMarks (assessorUsername, assignmentID)

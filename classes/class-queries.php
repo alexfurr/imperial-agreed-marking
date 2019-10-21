@@ -58,7 +58,7 @@ class agreedMarkingQueries
 
 
    // Replace this with a database driven element if they want to scale it up
-   public static function getMarkingGrid()
+   public static function getCriteria()
    {
 
      $formArray = array();

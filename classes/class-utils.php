@@ -30,9 +30,109 @@ class agreedMarkingUtils
    public static function getFinalMarks($savedMarks)
    {
 
-      echo '<pre>';
-      //print_r($savedMarks);
-      echo '</pre>';
+
+      // Get the weightings
+
+      $criteriaGroups = agreedMarkingQueries::getCriteria();
+
+      $totalAssessorTracker = array();
+
+      foreach ($criteriaGroups as $critertaGroupMeta)
+      {
+
+         $tempAssessorMarksArray = array();
+
+         $name = $critertaGroupMeta['name'];
+         $weighting = $critertaGroupMeta['weighting'];
+         $criteria = $critertaGroupMeta['criteria'];
+
+         $totalGroupAvailableMarks = 0;
+
+         foreach ($criteria as $criteriaInfo)
+         {
+            $criteraID = $criteriaInfo['thisID'];
+            if($criteriaInfo['type']<>"radio"){continue;}
+
+            $criteriaOptions = $criteriaInfo['options'];
+            $optionCount = count($criteriaOptions);
+            $totalGroupAvailableMarks = $totalGroupAvailableMarks+$optionCount;
+            $criteriaID = $criteriaInfo['thisID'];
+
+
+            // Get the saved values for this criteria
+            $thisSavedMarks = array();
+
+            if(isset($savedMarks[$criteriaID] ) )
+            {
+               $thisSavedMarks = $savedMarks[$criteriaID];
+            }
+
+            foreach($thisSavedMarks as $assessorUsername => $thisMark)
+            {
+               //echo $assessorUsername.' gave '.$thisMark.' / '.$optionCount.'<br/>';
+
+               $tempAssessorMarksArray[$assessorUsername][] = $thisMark;
+            }
+
+           // echo '<hr/>';
+         }
+
+         // Now got through the array getting the total for each assessor
+         $criteriaGroupTotalMarkArray = array();
+         foreach ($tempAssessorMarksArray as $assessorUsername => $tempCriteriaAssessorMarks)
+         {
+            $tempTotal = 0;
+            foreach ($tempCriteriaAssessorMarks as $thisMark)
+            {
+               $tempTotal = $tempTotal + $thisMark;
+            }
+
+            $criteriaGroupTotalMarkArray[$assessorUsername] = $tempTotal;
+         }
+
+
+         // Now appl ythe weighting
+         foreach ($criteriaGroupTotalMarkArray as $assessorUsername => $totalMark)
+         {
+            $tempGroupMarks = ($totalMark / $totalGroupAvailableMarks)*($weighting/100);
+
+            $totalAssessorTracker[$assessorUsername][] = $tempGroupMarks;
+         }
+
+
+
+
+      }
+
+      $finalArray = array();
+
+      foreach($totalAssessorTracker as $assessorUsername => $groupMarks)
+      {
+         $thisTotalMark = 0;
+         foreach ($groupMarks as $thisMark)
+         {
+             //echo $thisMark.'<br/>';
+             $thisTotalMark = $thisTotalMark+$thisMark;
+
+         }
+
+         $finalArray[$assessorUsername] = ($thisTotalMark * 100);
+      }
+
+      $totalAverage = 0;
+
+      $assessorCount = count($finalArray);
+      foreach ($finalArray as $thisMark)
+      {
+         $totalAverage = $totalAverage + $thisMark;
+      }
+
+      if($assessorCount>=1)
+      {
+         $finalArray['average'] = round(($totalAverage/$assessorCount), 2);
+      }
+
+      return $finalArray;
 
    }
 

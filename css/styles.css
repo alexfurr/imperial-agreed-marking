@@ -92,3 +92,27 @@ border-radius:5px;
 {
    padding:20px;
 }
+
+.finalMarkWrap
+{
+   font-size:20px;
+   padding:7px;
+   background:#f7f7f7;
+   border:1px solid #ccc;
+   margin:5px 0px 5px 0px;
+}
+
+
+.agreedMarksFeedbackMark
+{
+   font-size:20px;
+   margin:20px 0px;
+   border:1px solid #333;
+   border-radius:5px;
+   padding:10px;
+   background:#f7f7f7;
+}
+.agreedMarksFeedbackMark .theMark
+{
+   font-weight:bold;
+}

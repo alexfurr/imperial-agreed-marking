@@ -65,7 +65,7 @@ class agreedMarking_db {
       KEY assessorMarks (assessorUsername, assignmentID)
 		) ".$charSet;
 
-      print_r( dbDelta( $sql ) );
+     // print_r( dbDelta( $sql ) );
 
 
    }

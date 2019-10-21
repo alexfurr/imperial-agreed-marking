@@ -38,7 +38,7 @@ class agreedMarkingCPT
 		$labels = array(
 			'name'               =>  'Marking Assignment',
 			'singular_name'      =>  'Marking Assignment',
-			'menu_name'          =>  'Marking Assignment',
+			'menu_name'          =>  'Agreed Marking Assignments',
 			'name_admin_bar'     =>  'Marking Assignments',
 			'add_new'            =>  'Add New Marking Assignment',
 			'add_new_item'       =>  'Add New Marking Assignment',
@@ -54,12 +54,13 @@ class agreedMarkingCPT
 
       $args = array(
 			'labels'            	=> $labels,
+         "menu_icon"          => "dashicons-yes",
 			'public'            	=> false,
 			'exclude_from_search'	=> true,
 			'publicly_queryable' 	=> false,
 			'show_ui'            	=> true,
 			'show_in_nav_menus'		=> false,
-			'show_in_menu'      	=> 'edit.php?post_type=ek_pot',
+			'show_in_menu'      	=> true,
 			'query_var'         	=> true,
 			'rewrite'           	=> false,
 			'capability_type'   	=> 'post',

@@ -385,7 +385,7 @@ class agreedMarkingDraw
 
                $html.='<label for="'.$thisRadioID.'">';
                $html.='<span>'.$optionValue.'</span>';
-               $html.='<span><input type="radio" name="'.$thisID.'" id="'.$thisRadioID.'" value="'.$optionNumber.'"';
+               $html.='<span><input required type="radio" name="'.$thisID.'" id="'.$thisRadioID.'" value="'.$optionNumber.'"';
                if($optionNumber==$savedValue){$html.=' checked ';}
                $html.='/></span></label>';
                $optionNumber++;

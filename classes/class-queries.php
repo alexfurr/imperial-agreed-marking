@@ -122,6 +122,7 @@ class agreedMarkingQueries
         "Accurate content, presented at very high level",
         "Content not presented in logical order",
         "Some errors in the content",
+        "Significant errors in the content",
         "Some irrelevant material covered",
 
 
@@ -174,7 +175,7 @@ class agreedMarkingQueries
 
        // Create new item
      $newItem = array();
-     $newItem["description"] = "Comments on VERBAL PRESENTATION";
+     $newItem["description"] = "Comments on VERBAL PRESENTATION<br/>(tick as many as apply)";
      $newItem["type"] = "checkbox";
      $newItem["options"] = array(
         "Excellent delivery, good pace",
@@ -226,7 +227,7 @@ class agreedMarkingQueries
 
      // Create new criteria group
      $criteriaGroup = array();  // Create new cirteria group
-     $criteriaGroup['name'] = "Discussion";
+     $criteriaGroup['name'] = "DISCUSSION";
      $criteriaGroup['weighting'] = 30;
 
 
@@ -245,7 +246,7 @@ class agreedMarkingQueries
 
       // Create new item
       $newItem = array();
-      $newItem["description"] = "Comments on DISCUSSION";
+      $newItem["description"] = "Comments on DISCUSSION<br/>(tick as many as apply)";
       $newItem["type"] = "checkbox";
       $newItem["thisID"] = "discussion-comments"; // Must be unique
 

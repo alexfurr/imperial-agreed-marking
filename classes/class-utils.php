@@ -137,6 +137,38 @@ class agreedMarkingUtils
    }
 
 
+   // Pass ana rray of values. Takes highest and lowers and checks that they are not different by more than 7%
+   public function getMarkingDiscrepancy($marksArray)
+   {
+      // Order the array low to high
+      // Remove the average
+      unset($marksArray['average']);
+      asort($marksArray);
+      $itemsCount = count($marksArray);
+
+
+      if($itemsCount<=1)
+      {
+         return 0;
+      }
+      else
+      {
+         $array_keys = array_keys($marksArray);
+         // get the first item in the array
+         $lowestValue = $marksArray[array_shift($array_keys)];
+
+         // get the last item in the array
+         $highestValue =  $marksArray[array_pop($array_keys)];
+
+         $discrepancyValue = $highestValue-$lowestValue;
+         return $discrepancyValue;
+
+      }
+
+
+   }
+
+
 }
 
 

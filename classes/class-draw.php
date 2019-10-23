@@ -99,7 +99,6 @@ class agreedMarkingDraw
       }
 
       // Get a list of all the students who have been marked, along with the people that have marked them
-
       $masterMarkingStatus = agreedMarkingQueries::getAllAssignmentMarks($assignmentID);
 
       $myMarkingCount = 0;
@@ -157,8 +156,8 @@ class agreedMarkingDraw
          $finalMarks = agreedMarkingUtils::getFinalMarks($savedMarks);
 
 
-
          $thisMarker = 1;
+
          if(isset($finalMarks['average']) )
          {
             foreach ($finalMarks as $KEY => $VALUE)
@@ -168,6 +167,8 @@ class agreedMarkingDraw
                   $$varName = $VALUE.'%';
                   $thisMarker++;
 
+                  $tempCompareArray[] = $VALUE;
+
                }
                else
                {
@@ -175,6 +176,10 @@ class agreedMarkingDraw
                }
             }
          }
+
+
+         $finalMarkDiscrepancy = agreedMarkingUtils::getMarkingDiscrepancy($finalMarks);
+
          if($hasMarkedByYou==false)
          {
             $marker1Score = '-';
@@ -182,6 +187,13 @@ class agreedMarkingDraw
             $averageScore = '-';
          }
 
+         $discrepancyClass = '';
+         $discrepancyText = '';
+         if($finalMarkDiscrepancy>=FINAL_MARK_DISCREPANCY_THRESHOLD)
+         {
+            $discrepancyClass = 'failText';
+            $discrepancyText='<br/><span class="smallText">Discrepancy<span>';
+         }
 
          $html.= '<tr>';
          $html.='<td><a href="?view=markStudent&assignmentID='.$assignmentID.'&username='.$studentUsername.'">'.$studentName.'</a></td>';
@@ -190,7 +202,7 @@ class agreedMarkingDraw
          $html.='<td>'.$thisMarkingCount.'</td>';
          $html.='<td>'.$marker1Score.'</td>';
          $html.='<td>'.$marker2Score.'</td>';
-         $html.='<td><strong>'.$averageScore.'</strong></td>';
+         $html.='<td><strong class="'.$discrepancyClass.'">'.$averageScore.$discrepancyText.'</strong></td>';
          $html.='<td>';
          if($thisMarkingCount>=1)
          {
@@ -244,10 +256,16 @@ class agreedMarkingDraw
          $html.='<div class="finalMarkWrap">Your Mark : '.$finalMarksForThisAssessor.'%</div>';
       }
 
+      $markingDisrepancy = agreedMarkingUtils::getMarkingDiscrepancy($finalMarks);
+
+      if($markingDisrepancy>=FINAL_MARK_DISCREPANCY_THRESHOLD)
+      {
+         $html.='<h3 class="failText">Marking Discrepancy of '.$markingDisrepancy.'%</h3>';
+      }
+
 
       // Get the assessor count for this student
       $assessors = agreedMarkingQueries::getAssessorsForStudent($assignmentID, $username);
-
 
       $assessorCount = count($assessors);
 
@@ -256,11 +274,11 @@ class agreedMarkingDraw
       {
          $html.= 'The following assessors have marked this student';
          $html.='<ul class="agreedMarkingAssessorList">';
-         foreach ($assessors as $assessorInfo)
+         foreach ($assessors as $assessorUsername => $assessorInfo)
          {
             $firstName = $assessorInfo['firstName'];
             $lastName = $assessorInfo['lastName'];
-            $html.= '<li>'.$firstName.' '.$lastName.'</li>';
+            $html.= '<li>'.$firstName.' '.$lastName.' : '.$finalMarks[$assessorUsername].'%</li>';
          }
          $html.='</ul>';
 

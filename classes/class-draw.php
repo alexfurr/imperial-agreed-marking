@@ -27,7 +27,6 @@ class agreedMarkingDraw
 
        // Check for actions
 
-
       if(isset($_GET['myAction']) )
       {
          $action = $_GET['myAction'];
@@ -38,8 +37,6 @@ class agreedMarkingDraw
                echo agreedMarkingActions::markStudent($assignmentID);
             break;
          }
-
-
 
       }
 		$view='';
@@ -74,7 +71,7 @@ class agreedMarkingDraw
 
 			default:
 
-            $html.=agreedMarkingDraw::drawStudentList($assignmentID);
+               $html.=agreedMarkingDraw::drawStudentList($assignmentID);
 
 			break;
 
@@ -100,9 +97,12 @@ class agreedMarkingDraw
 
       $maxMarkers = 2; // Change this to allow multi markers other than 2. TO DO
       $myStudentsArray = array();
-      if(!current_user_can('edit_pages') )
+
+
+
+      if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $thisUsername)==false)
       {
-         return 'You do not have permission to view this page';
+         return 'You do not have access to this page';
       }
 
       // Get a list of all the students who have been marked, along with the people that have marked them
@@ -121,7 +121,7 @@ class agreedMarkingDraw
 
 
       // Get the users
-      $myStudents = agreedMarkingQueries::getAssignmentStudents();
+      $myStudents = agreedMarkingQueries::getAssignmentStudents($assignmentID);
 
       foreach ($myStudents as $studentUsername => $studentMeta)
       {
@@ -297,7 +297,7 @@ class agreedMarkingDraw
                jQuery(\'#assignmentStudentsTable2\').dataTable({
                   "bAutoWidth": true,
                   "bJQueryUI": true,
-                  "paging":   false,
+                  "paging":   true,
                });
             }
 
@@ -314,10 +314,19 @@ class agreedMarkingDraw
    public static function drawMarkingGrid($assignmentID, $username)
    {
 
+      $assessorUsername = $_SESSION['icl_username'];
+
+      if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $assessorUsername)==false)
+      {
+         return 'You do not have access to this page';
+      }
+
       $html = '';
 
+
+
+
       // Get the students marked grades
-      $assessorUsername = $_SESSION['icl_username'];
       $savedMarks = agreedMarkingQueries::getUserMarks($assignmentID, $username);
 
       // Get the assessor count for this student
@@ -613,6 +622,16 @@ class agreedMarkingDraw
    public static function drawStudentFeedback($assignmentID, $username)
    {
 
+      $thisUsername = $_SESSION['icl_username'];
+
+      if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $thisUsername)==false)
+      {
+         if($thisUsername<>$username)
+         {
+            return 'You do not have access to this page';
+         }
+
+      }
 
       $html = '';
 
@@ -728,6 +747,8 @@ class agreedMarkingDraw
                $thisAverage = $tempTotal/$assessorCount;
 
             }
+
+            $thisAverage = round($thisAverage, 2);
 
             $html.= $thisAverage.' / '.$optionCount;
 

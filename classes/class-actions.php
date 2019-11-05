@@ -6,8 +6,8 @@ class agreedMarkingActions
 
       $feedback = '';
 
-      // Get the current user ID
-      if(!current_user_can('edit_pages') )
+      $assessorUsername = $_SESSION['icl_username'];
+      if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $assessorUsername)==false)
       {
          return 'You do not have permission to do that';
       }
@@ -16,7 +16,6 @@ class agreedMarkingActions
 
       // Get the student username
 
-      $assessorUsername = $_SESSION['icl_username'];
       //$assessorUsername = 'aandi';
 
       $studentUsername = $_GET['username'];

@@ -24,6 +24,9 @@ class agreedMarkingCPT
 		add_filter( 'manage_agreed-marking_posts_columns', array( $this, 'my_custom_post_columns' ), 10, 2 );
 		add_action('manage_agreed-marking_posts_custom_column', array($this, 'customColumnContent'), 10, 2);
 
+      add_action( 'admin_menu', array( $this, 'create_AdminPages' ));
+
+
 	}
 
 
@@ -90,7 +93,8 @@ class agreedMarkingCPT
 
 
 
-		$columns['shortcode'] = 'Shortcode';
+      $columns['shortcode'] = 'Shortcode';
+      $columns['users'] = 'Markers and Students';
 
 		return $columns;
 	}
@@ -105,16 +109,36 @@ class agreedMarkingCPT
 		{
 
          case "shortcode":
-
             echo '[agreed-marking id='.$post_ID.']';
-
-
 				//echo '<a href="options.php?page=as-pfeedack-project-groups&projectID='.$post_ID.'">View / Edit Groups</a>';
 			break;
+
+         case "users":
+            echo '<a href="options.php?page=agreed-marking-users&id='.$post_ID.'">Edit Markers and Students</a>';
+         break;
 
 
 		}
 	}
+
+
+   function create_AdminPages()
+   {
+      /* Results Page */
+      $parentSlug = "no_parent";
+      $page_title="Markers and Students";
+      $menu_title="";
+      $menu_slug="agreed-marking-users";
+      $function=  array( $this, 'drawUsersPage' );
+      $myCapability = "delete_pages";
+      add_submenu_page($parentSlug, $page_title, $menu_title, $myCapability, $menu_slug, $function);
+
+   }
+
+   function drawUsersPage	()
+   {
+      require_once AGREED_MARKING_PATH.'admin/users.php'; # Grade Boundaries
+   }
 
 
 

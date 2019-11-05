@@ -2,24 +2,28 @@
 
 class agreedMarkingQueries
 {
-   public static function getAssignmentStudents()
+   public static function getAssignmentStudents($assignmentID)
    {
 
       $returnArray = array();
-      $myStudents = get_users( 'role=subscriber' );
+      $myStudents = get_post_meta( $assignmentID, 'myStudents', true );
+
       // Array of WP_User objects.
-      foreach ( $myStudents as $userInfo ) {
+      foreach ( $myStudents as $thisUsername ) {
 
-         $username = $userInfo->user_login;
-         $userID = $userInfo->ID;
-         $firstName = get_user_meta($userID, 'first_name', true);
-         $lastName = get_user_meta($userID, 'last_name', true);
+         $userMeta = imperialQueries::getUserInfo($thisUsername);
 
-         $returnArray[$username] = array(
-            "userID" => $userID,
-            "firstName" => $firstName,
-            "lastName" => $lastName,
-         );
+         $usernameCheck = $userMeta['username'];
+         $firstName = $userMeta['first_name'];
+         $lastName = $userMeta['last_name'];
+
+         if($usernameCheck<>"")
+         {
+            $returnArray[$thisUsername] = array(
+               "firstName" => $firstName,
+               "lastName" => $lastName,
+            );
+         }
       }
 
       return $returnArray;

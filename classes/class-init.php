@@ -15,7 +15,8 @@ class agreedMarking
 	function addWPActions ()
 	{
 		//Add Front End Jquery and CSS
-		add_action( 'wp_head', array( $this, 'frontendEnqueues' ) );
+      add_action( 'wp_head', array( $this, 'frontendEnqueues' ) );
+      add_action( 'admin_enqueue_scripts', array( $this, 'frontendEnqueues' ) );
 
 
 		// Setup shortcodes

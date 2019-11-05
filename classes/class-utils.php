@@ -146,7 +146,6 @@ class agreedMarkingUtils
       asort($marksArray);
       $itemsCount = count($marksArray);
 
-
       if($itemsCount<=1)
       {
          return 0;
@@ -165,6 +164,26 @@ class agreedMarkingUtils
 
       }
 
+
+   }
+
+
+   // Checks a username against an assessment to see if they can mark it
+   public static function checkMarkerAccess($assignmentID, $username)
+   {
+      $assignmentMarkersArray  = get_post_meta( $assignmentID, 'myMarkers', true );
+
+      if(in_array($username, $assignmentMarkersArray))
+      {
+         return true;
+      }
+
+      if(current_user_can('edit_pages') )
+      {
+         return true;
+      }
+
+      return false;
 
    }
 

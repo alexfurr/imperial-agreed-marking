@@ -138,7 +138,7 @@ class agreedMarkingUtils
 
 
    // Pass ana rray of values. Takes highest and lowers and checks that they are not different by more than 7%
-   public function getMarkingDiscrepancy($marksArray)
+   public static function getMarkingDiscrepancy($marksArray)
    {
       // Order the array low to high
       // Remove the average

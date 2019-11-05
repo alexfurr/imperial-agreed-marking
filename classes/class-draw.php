@@ -92,6 +92,13 @@ class agreedMarkingDraw
    {
 
       $thisUsername = $_SESSION['icl_username'];
+
+      $notMarkedByYouTable = '';
+      $markedByYouTable = '';
+      $markedTable = '';
+      $notMarkedTable = '';
+
+      $maxMarkers = 2; // Change this to allow multi markers other than 2. TO DO
       $myStudentsArray = array();
       if(!current_user_can('edit_pages') )
       {
@@ -111,21 +118,7 @@ class agreedMarkingDraw
          }
       }
 
-      $html = '';
 
-      $html.='You have marked '.$myMarkingCount.' student(s)<hr/>';
-
-      $html.= '<table id="assignmentStudentsTable">';
-      $html.= '<thead><tr>
-      <th>Student Name</th>
-      <th>Username</th>
-      <th>Status</th>
-      <th>Marked</th>
-      <th>Score 1</th>
-      <th>Score 2</th>
-      <th>Averaged Score</th>
-      <th>Preview Report</th>
-      </tr></thead>';
 
       // Get the users
       $myStudents = agreedMarkingQueries::getAssignmentStudents();
@@ -143,11 +136,12 @@ class agreedMarkingDraw
             $myStatus= '<span class="successText">Marked by you</span>';
          }
 
-         $thisMarkingCount = '<span class="greyText">0</span>';
+         $thisMarkingCount = 0;
          if(array_key_exists($studentUsername, $masterMarkingStatus) )
          {
             $markersArray = $masterMarkingStatus[$studentUsername];
             $thisMarkingCount = count($markersArray);
+
          }
 
          $savedMarks = agreedMarkingQueries::getUserMarks($assignmentID, $studentUsername);
@@ -155,6 +149,14 @@ class agreedMarkingDraw
          // Get the scores
          $finalMarks = agreedMarkingUtils::getFinalMarks($savedMarks);
 
+         // Create blank vars for all possible marker values
+         $i=1;
+         while ($i<=$maxMarkers)
+         {
+            $varName = 'marker'.$i.'Score';
+            $$varName = '-';
+            $i++;
+         }
 
          $thisMarker = 1;
 
@@ -164,9 +166,10 @@ class agreedMarkingDraw
             {
                $varName = 'marker'.$thisMarker.'Score';
                if($KEY<>"average"){
-                  $$varName = $VALUE.'%';
-                  $thisMarker++;
 
+                  $$varName = $VALUE.'%';
+                  $$varName.='<br/><span class="smallText">'.$KEY.'</span>';
+                  $thisMarker++;
                   $tempCompareArray[] = $VALUE;
 
                }
@@ -180,6 +183,13 @@ class agreedMarkingDraw
 
          $finalMarkDiscrepancy = agreedMarkingUtils::getMarkingDiscrepancy($finalMarks);
 
+         // Can this user mark the student? Is max markers complete, OR have they marked it
+         $allowMarking=false;
+         if($thisMarkingCount<$maxMarkers || $hasMarkedByYou==true)
+         {
+            $allowMarking=true;
+         }
+
          if($hasMarkedByYou==false)
          {
             $marker1Score = '-';
@@ -189,39 +199,102 @@ class agreedMarkingDraw
 
          $discrepancyClass = '';
          $discrepancyText = '';
-         if($finalMarkDiscrepancy>=FINAL_MARK_DISCREPANCY_THRESHOLD)
+         $rowClass='';
+         if($finalMarkDiscrepancy>=FINAL_MARK_DISCREPANCY_THRESHOLD && $hasMarkedByYou==true)
          {
             $discrepancyClass = 'failText';
-            $discrepancyText='<br/><span class="smallText">Discrepancy<span>';
+            $discrepancyText='<br/><span class="smallText">'.$finalMarkDiscrepancy.'% discrepancy<span>';
+            $rowClass = 'rowAlert';
          }
 
-         $html.= '<tr>';
-         $html.='<td><a href="?view=markStudent&assignmentID='.$assignmentID.'&username='.$studentUsername.'">'.$studentName.'</a></td>';
-         $html.='<td>'.$studentUsername.'</td>';
-         $html.='<td>'.$myStatus.'</td>';
-         $html.='<td>'.$thisMarkingCount.'</td>';
-         $html.='<td>'.$marker1Score.'</td>';
-         $html.='<td>'.$marker2Score.'</td>';
-         $html.='<td><strong class="'.$discrepancyClass.'">'.$averageScore.$discrepancyText.'</strong></td>';
-         $html.='<td>';
-         if($thisMarkingCount>=1)
+         $myStrVar = 'notMarkedByYouTable';
+         if($hasMarkedByYou==true)
          {
-            $html.='<a class="imperial-button" href="?view=studentReport&assignmentID='.$assignmentID.'&username='.$studentUsername.'">Report
-            </a>';
+            $myStrVar = 'markedByYouTable';
          }
-         $html.='</td>';
 
-         $html.='</tr>';
+         $$myStrVar.= '<tr class="'.$rowClass.'">';
+         $$myStrVar.='<td>';
+         if($allowMarking==true)
+         {
+            $$myStrVar.='<a href="?view=markStudent&assignmentID='.$assignmentID.'&username='.$studentUsername.'">';
+         }
+         $$myStrVar.=$studentName;
+         if($allowMarking==true)
+         {
+            $$myStrVar.='</a>';
+         }
+         $$myStrVar.='</td>';
+         $$myStrVar.='<td>'.$studentUsername.'</td>';
+         $$myStrVar.='<td>'.$thisMarkingCount.'</td>';
+
+         if($hasMarkedByYou==true)
+         {
+            //$$myStrVar.='<td>'.$myStatus.'</td>';
+            $$myStrVar.='<td>'.$marker1Score.'</td>';
+            $$myStrVar.='<td>'.$marker2Score.'</td>';
+            $$myStrVar.='<td><strong class="'.$discrepancyClass.'">'.$averageScore.$discrepancyText.'</strong></td>';
+            $$myStrVar.='<td>';
+
+            $$myStrVar.='<a class="imperial-button" href="?view=studentReport&assignmentID='.$assignmentID.'&username='.$studentUsername.'">Preview
+               </a>';
+            $$myStrVar.='</td>';
+         }
+
+         $$myStrVar.='</tr>';
       }
 
-      $html.= '</table>';
+
+
+      // Show those students that have been marked by you
+      $html = '';
+
+      $markedTableHeader= '<thead><tr>
+      <th>Student Name</th>
+      <th>Username</th>
+      <th>Marked</th>
+      <th>Score 1</th>
+      <th>Score 2</th>
+      <th>Averaged Score</th>
+      <th>Preview Report</th>
+      </tr></thead>';
+
+
+      $unMarkedTableHeader= '<thead><tr>
+      <th>Student Name</th>
+      <th>Username</th>
+      <th>Marker Count</th>
+      </tr></thead>';
+      $markedTable.='<h3>Students Marked by you</h3>';
+      $notMarkedTable.='<h3>Students Not Yet Marked by you</h3>';
+
+      $markedTable.= '<table id="assignmentStudentsTable1">'.$markedTableHeader;
+      $notMarkedTable.= '<table id="assignmentStudentsTable2">'.$unMarkedTableHeader;
+
+
+      //$html.='You have marked '.$myMarkingCount.' student(s)<hr/>';
+
+      $markedTable.=$markedByYouTable.'</table>';
+      $notMarkedTable.=$notMarkedByYouTable.'</table>';
+
+
+      $html = $markedTable.'<hr/>'.$notMarkedTable;
 
       $html.='<script>
 
          jQuery(document).ready(function(){
-            if (jQuery(\'#assignmentStudentsTable\').length>0)
+            if (jQuery(\'#assignmentStudentsTable1\').length>0)
             {
-               jQuery(\'#assignmentStudentsTable\').dataTable({
+               jQuery(\'#assignmentStudentsTable1\').dataTable({
+                  "bAutoWidth": true,
+                  "bJQueryUI": true,
+                  "paging":   false,
+               });
+            }
+
+            if (jQuery(\'#assignmentStudentsTable2\').length>0)
+            {
+               jQuery(\'#assignmentStudentsTable2\').dataTable({
                   "bAutoWidth": true,
                   "bJQueryUI": true,
                   "paging":   false,
@@ -229,6 +302,8 @@ class agreedMarkingDraw
             }
 
          });
+
+
             </script>';
 
 
@@ -245,6 +320,12 @@ class agreedMarkingDraw
       $assessorUsername = $_SESSION['icl_username'];
       $savedMarks = agreedMarkingQueries::getUserMarks($assignmentID, $username);
 
+      // Get the assessor count for this student
+      $assessors = agreedMarkingQueries::getAssessorsForStudent($assignmentID, $username);
+
+      $assessorCount = count($assessors);
+
+
       // Get the scores
       $finalMarks = agreedMarkingUtils::getFinalMarks($savedMarks);
 
@@ -260,14 +341,27 @@ class agreedMarkingDraw
 
       if($markingDisrepancy>=FINAL_MARK_DISCREPANCY_THRESHOLD)
       {
-         $html.='<h3 class="failText">Marking Discrepancy of '.$markingDisrepancy.'%</h3>';
+         $html.='<div class="imperial-feedback imperial-feedback-error">';
+         $html.='<strong>Marking Discrepancy of '.$markingDisrepancy.'%</strong><br/>';
+         $html.='The mark discrepancy is too high (difference >7 Marks). Please discuss with your co-marker to resolve.</div>';
+
+      }
+      else
+      {
+
+         if($assessorCount>1)
+         {
+            $html.='<div class="imperial-feedback imperial-feedback-success">';
+            $html.='Marking difference is <7 Marks. No further action required</div>';
+
+         }
+
+
       }
 
 
-      // Get the assessor count for this student
-      $assessors = agreedMarkingQueries::getAssessorsForStudent($assignmentID, $username);
 
-      $assessorCount = count($assessors);
+
 
       $html.='<div class="agreedMarkingAssessorListWrap">';
       if($assessorCount >=1)
@@ -418,7 +512,7 @@ class agreedMarkingDraw
                //If there is a discrepenecy then Highlight this
                if(count($savedMarks)>=1 )
                {
-                  $html.='<h3>Marks from other assessors</h3>';
+                //  $html.='<h3>Marks from other assessors</h3>';
                   $isAgreed = agreedMarkingUtils::checkDiscrepancy($thisID, $savedMarks);
                   if($isAgreed==true)
                   {

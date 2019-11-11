@@ -11,19 +11,29 @@ class agreedMarkingDraw
 		// This is optional - you may not need ANY params
 		$atts = shortcode_atts(
 			array(
-				'id'		=> '',
+			//	'id'		=> '',
 				),
 			$atts
 		);
 
-		$assignmentID = (int) $atts['id']; // It's expecting a number so check using 'int'
+      $view='';
+      if(isset($_GET['view']) )
+      {
+         $view = $_GET['view'];
+      }
+
+      $assignmentID='';
+      $assignmentName = '';
+      if(isset($_GET['assignmentID']) )
+      {
+         $assignmentID = $_GET['assignmentID'];
+
+         // Get the title
+         $assignmentName = get_the_title($assignmentID);
+      }
+
+		//$assignmentID = (int) $atts['id']; // It's expecting a number so check using 'int'
 		$html = '';
-
-
-       // Ge the assignment title
-       $assignmentTitle = get_the_title($assignmentID);
-
-       echo '<h2>'.$assignmentTitle.'</h2>';
 
        // Check for actions
 
@@ -39,11 +49,6 @@ class agreedMarkingDraw
          }
 
       }
-		$view='';
-		if(isset($_GET['view']) )
-		{
-			$view = $_GET['view'];
-		}
 
 
 		switch ($view)
@@ -52,10 +57,10 @@ class agreedMarkingDraw
 
          case "markStudent":
             $username = $_GET['username'];
-
             $studentMeta = imperialQueries::getUserInfo($username);
+            $html.='<h2>'.$assignmentName.'</h2>';
             $html.='<h3>'.$studentMeta['first_name'].' '.$studentMeta['last_name'].'</h3>';
-            $html.=imperialThemeDraw::drawBackButton("Back to student list", "?");
+            $html.=imperialThemeDraw::drawBackButton("Back to student list", "?view=studentList&assignmentID=".$assignmentID);
             $html.='<hr/>';
             $html.=agreedMarkingDraw::drawMarkingGrid($assignmentID, $username);
          break;
@@ -64,22 +69,25 @@ class agreedMarkingDraw
             $username = $_GET['username'];
 
             $studentMeta = imperialQueries::getUserInfo($username);
+            $html.='<h2>'.$assignmentName.'</h2>';
             $html.='<h3>'.$studentMeta['first_name'].' '.$studentMeta['last_name'].'</h3>';
             $html.='<hr/>';
             $html.=agreedMarkingDraw::drawStudentFeedback($assignmentID, $username);
          break;
 
+         case "studentList":
+            $html.='<h2>'.$assignmentName.'</h2>';
+
+            $html.=agreedMarkingDraw::drawStudentList($assignmentID);
+         break;
+
 			default:
 
-               $html.=agreedMarkingDraw::drawStudentList($assignmentID);
+            $html.=agreedMarkingDraw::drawAssignmentList();
 
 			break;
 
 		}
-
-
-
-
 
 		return $html;
 	}
@@ -147,7 +155,7 @@ class agreedMarkingDraw
          $savedMarks = agreedMarkingQueries::getUserMarks($assignmentID, $studentUsername);
 
          // Get the scores
-         $finalMarks = agreedMarkingUtils::getFinalMarks($savedMarks);
+         $finalMarks = agreedMarkingUtils::getFinalMarks($assignmentID, $savedMarks);
 
          // Create blank vars for all possible marker values
          $i=1;
@@ -297,7 +305,7 @@ class agreedMarkingDraw
                jQuery(\'#assignmentStudentsTable2\').dataTable({
                   "bAutoWidth": true,
                   "bJQueryUI": true,
-                  "paging":   true,
+                  "paging":   false,
                });
             }
 
@@ -310,10 +318,59 @@ class agreedMarkingDraw
             return $html;
    }
 
+   public static function drawAssignmentList()
+   {
+
+      // Now go through all existing post meta and save the  info
+		$args = array(
+		'post_type' => "agreed-marking",
+		);
+
+
+      $html='';
+		$assessments = get_posts( $args );
+      $html='<table class="imperial-table-1"><tr>';
+      $html.='<th>Assessment Name</th><th>Date</th><th>Students</th><th>Markers</th></tr>';
+
+		foreach ($assessments as $postMeta)
+		{
+         $assignmentID = $postMeta->ID;
+         $assessmentDate = get_post_meta( $assignmentID, 'assessmentDate', true );
+         $students = get_post_meta( $assignmentID, 'myStudents', true );
+         $markers = get_post_meta( $assignmentID, 'myMarkers', true );
+         $studentCount = 0;
+         $markerCount = 0;
+
+         if(is_array($students) )
+         {
+            $studentCount = count($students);
+         }
+
+         if(is_array($markers) )
+         {
+            $markerCount = count($markers);
+         }
+
+         $html.='<tr>';
+			$assignmentID = $postMeta->ID;
+         $html.='<td><a href="?view=studentList&assignmentID='.$assignmentID.'">'. get_the_title($assignmentID).'</a></td>';
+
+         $html.='<td>'. $assessmentDate.' </td>';
+         $html.='<td>'. $studentCount.' </td>';
+         $html.='<td>'. $markerCount.' </td>';
+
+         $html.='<tr>';
+
+      }
+      $html.='</table>';
+
+      return $html;
+
+   }
+
 
    public static function drawMarkingGrid($assignmentID, $username)
    {
-
       $assessorUsername = $_SESSION['icl_username'];
 
       if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $assessorUsername)==false)
@@ -336,7 +393,7 @@ class agreedMarkingDraw
 
 
       // Get the scores
-      $finalMarks = agreedMarkingUtils::getFinalMarks($savedMarks);
+      $finalMarks = agreedMarkingUtils::getFinalMarks($assignmentID, $savedMarks);
 
 
       if(isset($finalMarks[$_SESSION['icl_username']]) )
@@ -352,7 +409,7 @@ class agreedMarkingDraw
       {
          $html.='<div class="imperial-feedback imperial-feedback-error">';
          $html.='<strong>Marking Discrepancy of '.$markingDisrepancy.'%</strong><br/>';
-         $html.='The mark discrepancy is too high (difference >7 Marks). Please discuss with your co-marker to resolve.</div>';
+         $html.='The mark discrepancy is too high (difference >7 Marks). Please discuss with your co-marker to resolve and resubmit your amended marks.</div>';
 
       }
       else
@@ -361,14 +418,11 @@ class agreedMarkingDraw
          if($assessorCount>1)
          {
             $html.='<div class="imperial-feedback imperial-feedback-success">';
-            $html.='Marking difference is <7 Marks. No further action required</div>';
+            $html.='Marking difference is <=7 Marks. No further action required</div>';
 
          }
 
-
       }
-
-
 
 
 
@@ -396,7 +450,7 @@ class agreedMarkingDraw
 
       // Get the current page URL
       $formAction = '?view=markStudent&myAction=markStudent&assignmentID='.$assignmentID.'&username='.$username;
-      $formItemsArray = agreedMarkingQueries::getCriteria();
+      $formItemsArray = agreedMarkingQueries::getMarkingCriteria($assignmentID);
 
 
       $html.='<form action="'.$formAction.'" method="post" class="imperial-form">';
@@ -458,10 +512,7 @@ class agreedMarkingDraw
 
       $html.='</form>';
 
-
-
       return $html;
-
    }
 
    public static function drawFormItem($args)
@@ -475,10 +526,10 @@ class agreedMarkingDraw
       $thisID = $args['thisID'];
       $assessors = $args['assessors'];
       $savedValue = '';
-      if(!is_array($savedMarks) )
-      {
-         $savedMarks = array();
-      }
+      if(!is_array($savedMarks) ) { $savedMarks = array(); }
+
+      if(!is_array($options)){$options = array(); } // if there are no options create blank array
+
 
 
       $thisAssessessorUsername = $_SESSION['icl_username'];
@@ -499,6 +550,7 @@ class agreedMarkingDraw
             $optionNumber = 1;
 
             $html.='<div class="formItemRadioWrap">';
+
             foreach ($options as $optionValue)
             {
 
@@ -586,10 +638,10 @@ class agreedMarkingDraw
 
 
          case "checkbox":
-            $optionNumber = 1;
-            foreach ($options as $optionValue)
+            printArray($options);
+            foreach ($options as $optionID => $optionValue)
             {
-               $thisCheckboxID = $thisID.'_'.$optionNumber;
+               $thisCheckboxID = $thisID.'_'.$optionID;
 
                $isChecked = false;
                if(isset($savedMarks[$thisCheckboxID][$thisAssessessorUsername]) )
@@ -597,11 +649,9 @@ class agreedMarkingDraw
                   $isChecked = true;
                }
                $html.='<label for="'.$thisCheckboxID.'">';
-               $html.='<input type="checkbox" name="'.$thisCheckboxID.'" id="'.$thisCheckboxID.'" value="'.$optionNumber.'"';
+               $html.='<input type="checkbox" name="checkbox_'.$thisID.'[]" id="'.$thisCheckboxID.'" value="'.$optionID.'"';
                if($isChecked){$html.=' checked ';}
                $html.='/>'.$optionValue.'</label>';
-
-               $optionNumber++;
 
             }
 
@@ -639,7 +689,7 @@ class agreedMarkingDraw
 
 
       // Get the scores
-      $finalMarks = agreedMarkingUtils::getFinalMarks($savedMarks);
+      $finalMarks = agreedMarkingUtils::getFinalMarks($assignmentID, $savedMarks);
 
 
       $finalMark = $finalMarks['average'];

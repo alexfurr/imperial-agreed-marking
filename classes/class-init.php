@@ -16,7 +16,7 @@ class agreedMarking
 	{
 		//Add Front End Jquery and CSS
       add_action( 'wp_head', array( $this, 'frontendEnqueues' ) );
-      add_action( 'admin_enqueue_scripts', array( $this, 'frontendEnqueues' ) );
+      add_action( 'admin_enqueue_scripts', array( $this, 'adminEnqueues' ) );
 
 
 		// Setup shortcodes
@@ -24,6 +24,25 @@ class agreedMarking
 
 
 	}
+
+
+   function adminEnqueues()
+   {
+      global $wp_scripts;
+		$queryui = $wp_scripts->query('jquery-ui-core');
+
+		// load the jquery ui theme for datepicker
+		$url = "https://ajax.googleapis.com/ajax/libs/jqueryui/".$queryui->ver."/themes/smoothness/jquery-ui.css";
+		wp_enqueue_style('jquery-ui-smoothness', $url, false, null);
+
+      wp_enqueue_script('ek_datatables-js', '//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js', array( 'jquery' ) );
+      wp_enqueue_style( 'ek-datatables-css-js', '//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css' );
+
+      wp_enqueue_style( 'imperial-agreed-marking-styles', AGREED_MARKING_URL . '/css/styles.css', array(), 0.1 );
+
+
+
+   }
 
 
 	function frontendEnqueues ()

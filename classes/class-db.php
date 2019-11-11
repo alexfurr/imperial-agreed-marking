@@ -4,7 +4,7 @@ class agreedMarking_db {
 
    // Was 0.6
 
-   var $DBversion = 0.2;
+   var $DBversion = 0.4;
 
 
 	//~~~~~
@@ -14,7 +14,14 @@ class agreedMarking_db {
 		global $wpdb;
 		// Define the table as a global
 		global $agreedMarkingUserMarks;
-		$agreedMarkingUserMarks = $wpdb->prefix . 'agreedMarkingUserMarks';
+      global $agreedMarkingCriteriaGroups;
+      global $agreedMarkingCriteria;
+      global $agreedMarkingCriteriaOptions;
+
+      $agreedMarkingUserMarks = $wpdb->prefix . 'agreedMarkingUserMarks';
+      $agreedMarkingCriteriaGroups = $wpdb->prefix . 'agreedMarkingCriteriaGroups';
+      $agreedMarkingCriteria = $wpdb->prefix . 'agreedMarkingCriteria';
+      $agreedMarkingCriteriaOptions = $wpdb->prefix . 'agreedMarkingCriteriaOptions';
 
 		add_action( 'plugins_loaded', array($this, 'myplugin_update_db_check' ) );
 
@@ -45,13 +52,19 @@ class agreedMarking_db {
 
 
 
+
+
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		// Get plugin version and set option to current version
 		global $wpdb;
 		global $agreedMarkingUserMarks;
-
+      global $agreedMarkingCriteriaGroups;
+      global $agreedMarkingCriteria;
+      global $agreedMarkingCriteriaOptions;
 
 		$charSet = $wpdb->get_charset_collate();
+
+
 		$sql = "CREATE TABLE $agreedMarkingUserMarks (
 		ID int NOT NULL AUTO_INCREMENT,
 		assignmentID mediumint(9) NOT NULL,
@@ -64,8 +77,49 @@ class agreedMarking_db {
       KEY studentMarks (username, assignmentID),
       KEY assessorMarks (assessorUsername, assignmentID)
 		) ".$charSet;
+      dbDelta( $sql );
 
-     // print_r( dbDelta( $sql ) );
+      // Criteria Groups
+      $sql = "CREATE TABLE $agreedMarkingCriteriaGroups (
+      groupID int NOT NULL AUTO_INCREMENT,
+      assignmentID mediumint(9) NOT NULL,
+      groupName varchar(255),
+      weighting int,
+      groupOrder int,
+      PRIMARY KEY (groupID),
+      KEY assignmentID (assignmentID)
+      ) ".$charSet;
+
+      dbDelta( $sql );
+
+
+      // Criteria
+      $sql = "CREATE TABLE $agreedMarkingCriteria (
+      criteriaID int NOT NULL AUTO_INCREMENT,
+      groupID mediumint(9) NOT NULL,
+      criteriaName varchar(255),
+      criteriaType varchar(50),
+      criteriaOrder int,
+      PRIMARY KEY (criteriaID),
+      KEY groupID (groupID)
+      ) ".$charSet;
+      dbDelta( $sql );
+
+
+      // Criteria options
+      $sql = "CREATE TABLE $agreedMarkingCriteriaOptions (
+      optionID int NOT NULL AUTO_INCREMENT,
+      criteriaID int NOT NULL,
+      optionValue varchar(255),
+      optionOrder int,
+      PRIMARY KEY (optionID),
+      KEY criteriaID (criteriaID)
+      ) ".$charSet;
+      dbDelta( $sql );
+
+      echo $sql;
+
+
 
 
    }

@@ -9,7 +9,7 @@ if(!isset($_GET['id']) )
    echo 'No Assessment ID!';
    die();
 }
-$assessmentID = $_GET['id'];
+$assignmentID = $_GET['id'];
 
 
 
@@ -27,7 +27,7 @@ if(isset($_GET['myAction']) )
 
 
          $metaKey = 'my'.ucfirst($userType).'s';
-         $tempArray = get_post_meta( $assessmentID, $metaKey, true );
+         $tempArray = get_post_meta( $assignmentID, $metaKey, true );
 
 
 
@@ -40,12 +40,7 @@ if(isset($_GET['myAction']) )
          $message = ucfirst($userType).' removed';
          echo imperialNetworkDraw::drawAdminNotice($message);
 
-         update_post_meta( $assessmentID, $metaKey, $tempArray );
-
-
-
-
-
+         update_post_meta( $assignmentID, $metaKey, $tempArray );
 
 
       break;
@@ -54,20 +49,20 @@ if(isset($_GET['myAction']) )
 
       case "addUsers":
 
-      $userType=$_POST['userType'];
+         $userType=$_POST['userType'];
 
 
          if($userType=="student")
          {
             $metaKeyName = "myStudents";
-            $tempArray = get_post_meta( $assessmentID, 'myStudents', true );
+            $tempArray = get_post_meta( $assignmentID, 'myStudents', true );
             $newUserList = $_POST['studentList'];
          }
 
          if($userType=="marker")
          {
             $metaKeyName = "myMarkers";
-            $tempArray = get_post_meta( $assessmentID, 'myMarkers', true );
+            $tempArray = get_post_meta( $assignmentID, 'myMarkers', true );
             $newUserList = $_POST['markerList'];
          }
 
@@ -91,7 +86,7 @@ if(isset($_GET['myAction']) )
          $message = ucfirst($userType).'s added';
          echo imperialNetworkDraw::drawAdminNotice($message);
 
-         update_post_meta( $assessmentID, $metaKeyName, $arrayToAdd );
+         update_post_meta( $assignmentID, $metaKeyName, $arrayToAdd );
 
 
       break;
@@ -104,18 +99,18 @@ if(isset($_GET['myAction']) )
 
 echo '<div class="admin-settings-group">';
 echo '<h2>Markers</h2>';
-echo drawUserUploadForm($assessmentID, "marker");
-echo drawUserTable($assessmentID, "marker");
+echo drawUserUploadForm($assignmentID, "marker");
+echo drawUserTable($assignmentID, "marker");
 echo '</div>';
 
 echo '<div class="admin-settings-group">';
 echo '<h2>Students</h2>';
-echo drawUserUploadForm($assessmentID, "student");
-echo drawUserTable($assessmentID, "student");
+echo drawUserUploadForm($assignmentID, "student");
+echo drawUserTable($assignmentID, "student");
 echo '</div>';
 
 
-function drawUserUploadForm($assessmentID, $userType)
+function drawUserUploadForm($assignmentID, $userType)
 {
 
    $html='';
@@ -123,7 +118,7 @@ function drawUserUploadForm($assessmentID, $userType)
    $html.='<a href="javascript:toggleUploadForm(\''.$userType.'\')" class="button-secondary">Add '.$userType.'s</a>';
    $html.='<div id="userDiv_'.$userType.'" style="display:none;">';
    $html.= '<span class="smallText">Add one username on each row</span>';
-   $html.= '<form action="?page=agreed-marking-users&id='.$assessmentID.'&myAction=addUsers" method="post" class="imperial-form">';
+   $html.= '<form action="?page=agreed-marking-users&id='.$assignmentID.'&myAction=addUsers" method="post" class="imperial-form">';
    $html.= '<textarea name="'.$userType.'List" id="'.$userType.'List" cols="20" rows="10"></textarea>';
    $html.= '<input type="submit" value="Add '.ucfirst($userType).'s"  >';
    $html.= '<input type="hidden" name="userType" value="'.$userType.'">';
@@ -145,7 +140,7 @@ function drawUserUploadForm($assessmentID, $userType)
 
 }
 
-function drawUserTable($assessmentID, $userType)
+function drawUserTable($assignmentID, $userType)
 {
 
 
@@ -157,11 +152,20 @@ function drawUserTable($assessmentID, $userType)
    {
 
       case "marker":
-         $userArray = get_post_meta( $assessmentID, 'myMarkers', true );
+         $userArray = get_post_meta( $assignmentID, 'myMarkers', true );
+         $tableID="markerTable";
+         $headerArray = array("Name", "Username", "");
+
+
       break;
 
       case "student";
-         $userArray = get_post_meta( $assessmentID, 'myStudents', true );
+         $userArray = get_post_meta( $assignmentID, 'myStudents', true );
+         $tableID="studentTable";
+         $headerArray = array("Name", "Username", "Marked Count", "Score", "");
+
+         $masterMarkingStatus = agreedMarkingQueries::getAllAssignmentMarks($assignmentID);
+
       break;
    }
 
@@ -175,7 +179,14 @@ function drawUserTable($assessmentID, $userType)
    }
 
 
-   $html.='<table class="imperial-table">';
+   $html.='<table class="imperial-table" id="'.$tableID.'">';
+   $html.='<thead><tr>';
+   foreach ($headerArray as $colTitle)
+   {
+      $html.='<th>'.$colTitle.'</th>';
+   }
+   $html.='</tr></thead>';
+
    foreach ($userArray as $thisUsername)
    {
 
@@ -192,15 +203,63 @@ function drawUserTable($assessmentID, $userType)
          $errorClass = 'rowAlert';
       }
 
+      if($userType=="student")
+      {
+         $thisMarkingCount = 0;
+         if(array_key_exists($thisUsername, $masterMarkingStatus) )
+         {
+            $markersArray = $masterMarkingStatus[$thisUsername];
+            $thisMarkingCount = count($markersArray);
+
+         }
+
+         $savedMarks = agreedMarkingQueries::getUserMarks($assignmentID, $thisUsername);
+
+         // Get the scores
+         $finalMarks = agreedMarkingUtils::getFinalMarks($assignmentID, $savedMarks);
+
+         $finalMark ='-';
+         if(isset($finalMarks['average']) )
+         {
+            $finalMark = $finalMarks['average'].'%';
+         }
+
+      }
+
       $html.='<tr class="'.$errorClass.'">';
       $html.='<td>'.$fullName.'</td>';
       $html.='<td>'.$thisUsername.'</td>';
-      $html.='<td><a class="button-secondary" href="?page=agreed-marking-users&id=4&myAction=removeUser&username='.$thisUsername.'&userType='.$userType.'">Remove</a></td>';
+
+      if($userType=="student")
+      {
+         $html.='<td>'.$thisMarkingCount.'</td>';
+         $html.='<td>'.$finalMark.'</td>';
+      }
+
+      $html.='<td><a class="button-secondary" href="?page=agreed-marking-users&id='.$assignmentID.'&myAction=removeUser&username='.$thisUsername.'&userType='.$userType.'">Remove</a></td>';
       $html.='</tr>';
 
 
    }
+   $html.= '</tbody>';
+
    $html.='</table>';
+   $html.="
+   <script>
+   jQuery(document).ready( function () {
+      jQuery('#".$tableID."').DataTable({
+
+
+      'pageLength': 50
+      }
+
+
+
+      );
+   } );
+
+   </script>
+   ";
    return $html;
 
 }

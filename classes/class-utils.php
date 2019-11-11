@@ -27,13 +27,13 @@ class agreedMarkingUtils
 
    }
 
-   public static function getFinalMarks($savedMarks)
+   public static function getFinalMarks($assignmentID, $savedMarks)
    {
 
 
       // Get the weightings
 
-      $criteriaGroups = agreedMarkingQueries::getCriteria();
+      $criteriaGroups = agreedMarkingQueries::getMarkingCriteria($assignmentID);
 
       $totalAssessorTracker = array();
 
@@ -53,8 +53,17 @@ class agreedMarkingUtils
             $criteraID = $criteriaInfo['thisID'];
             if($criteriaInfo['type']<>"radio"){continue;}
 
+
+
             $criteriaOptions = $criteriaInfo['options'];
-            $optionCount = count($criteriaOptions);
+
+            $optionCount = 0;
+
+            if(is_array($criteriaOptions) )
+            {
+               $optionCount = count($criteriaOptions);
+            }
+
             $totalGroupAvailableMarks = $totalGroupAvailableMarks+$optionCount;
             $criteriaID = $criteriaInfo['thisID'];
 

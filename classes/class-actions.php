@@ -35,18 +35,48 @@ class agreedMarkingActions
 
       foreach ($_POST as $KEY => $VALUE)
       {
-         $myFields="INSERT into $agreedMarkingUserMarks (assignmentID, username, assessorUsername, itemID, savedValue, dateSubmitted) ";
-         $myFields.="VALUES (%d, %s, %s, %s, %s, %s)";
+
+         if (strpos($KEY, 'checkbox') !== false) {
+             $thisCriteriaID = substr($KEY, strrpos($KEY, '_') + 1);
+             foreach ($VALUE as $thisOptionID)
+             {
+                $thisUID = $thisCriteriaID.'_'.$thisOptionID;
+
+               $myFields="INSERT into $agreedMarkingUserMarks (assignmentID, username, assessorUsername, itemID, savedValue, dateSubmitted) ";
+               $myFields.="VALUES (%d, %s, %s, %s, %s, %s)";
 
 
-         $RunQry = $wpdb->query( $wpdb->prepare($myFields,
-            $assignmentID,
-            $studentUsername,
-            $assessorUsername,
-            $KEY,
-            $VALUE,
-            $now
-         ));
+               $RunQry = $wpdb->query( $wpdb->prepare($myFields,
+               $assignmentID,
+               $studentUsername,
+               $assessorUsername,
+               $thisUID,
+               1,
+               $now
+               ));
+
+
+            }
+
+         }
+         else
+         {
+
+            $myFields="INSERT into $agreedMarkingUserMarks (assignmentID, username, assessorUsername, itemID, savedValue, dateSubmitted) ";
+            $myFields.="VALUES (%d, %s, %s, %s, %s, %s)";
+
+
+            $RunQry = $wpdb->query( $wpdb->prepare($myFields,
+               $assignmentID,
+               $studentUsername,
+               $assessorUsername,
+               $KEY,
+               $VALUE,
+               $now
+            ));
+
+         }
+
 
 
       }

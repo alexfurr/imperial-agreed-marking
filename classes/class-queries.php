@@ -2,68 +2,122 @@
 
 class agreedMarkingQueries
 {
-   public static function getAssignmentStudents($assignmentID)
-   {
 
-      $returnArray = array();
-      $myStudents = get_post_meta( $assignmentID, 'myStudents', true );
 
-      // Array of WP_User objects.
-      foreach ( $myStudents as $thisUsername ) {
-
-         $userMeta = imperialQueries::getUserInfo($thisUsername);
-
-         $usernameCheck = $userMeta['username'];
-         $firstName = $userMeta['first_name'];
-         $lastName = $userMeta['last_name'];
-
-         if($usernameCheck<>"")
-         {
-            $returnArray[$thisUsername] = array(
-               "firstName" => $firstName,
-               "lastName" => $lastName,
-            );
-         }
-      }
-
-      return $returnArray;
-   }
-
-   public static function getUserMarks($assignmentID, $username, $assessorUsername="")
+   public static function getCriteriaGroups($assignmentID)
    {
 
       global $wpdb;
-      global $agreedMarkingUserMarks;
+      global $agreedMarkingCriteriaGroups;
 
-
-      $query = $wpdb->prepare( "SELECT * FROM $agreedMarkingUserMarks WHERE assignmentID= %d AND username = %s",
-      $assignmentID, $username);
-      $marksArray = $wpdb->get_results($query, ARRAY_A);
-
-      $returnArray= array();
-
-      foreach ($marksArray as $marksInfo)
-      {
-         $assessorUsername = $marksInfo['assessorUsername'];
-         $itemID = $marksInfo['itemID'];
-         $savedValue = stripslashes($marksInfo['savedValue']);
-
-         $returnArray[$itemID][$assessorUsername] = $savedValue;
-
-      }
-
-
-      return $returnArray;
-
+      $query = $wpdb->prepare( "SELECT * FROM $agreedMarkingCriteriaGroups WHERE assignmentID= %d order by groupOrder ASC",
+      $assignmentID);
+      $groupsArray = $wpdb->get_results($query, ARRAY_A);
+      return $groupsArray;
 
    }
 
 
+   public static function getCriteriaInGroup($groupID)
+   {
 
+      global $wpdb;
+      global $agreedMarkingCriteria;
+
+      $query = $wpdb->prepare( "SELECT * FROM $agreedMarkingCriteria WHERE groupID= %d order by criteriaOrder ASC",
+      $groupID);
+
+      $criteriaArray = $wpdb->get_results($query, ARRAY_A);
+      return $criteriaArray;
+
+   }
+
+   public static function getCriteriaOptions($criteriaID)
+   {
+
+      global $wpdb;
+      global $agreedMarkingCriteriaOptions;
+
+      $query = $wpdb->prepare( "SELECT * FROM $agreedMarkingCriteriaOptions WHERE criteriaID= %d order by optionOrder ASC",
+      $criteriaID);
+
+      $optionsArray = $wpdb->get_results($query, ARRAY_A);
+      return $optionsArray;
+
+   }
 
    // Replace this with a database driven element if they want to scale it up
-   public static function getCriteria()
+   public static function getMarkingCriteria($assignmentID)
    {
+
+
+      $criteriaReturnArray = array();
+      $criteriaGroups = agreedMarkingQueries::getCriteriaGroups($assignmentID);
+
+      // Get the criteria
+      foreach ($criteriaGroups as $groupMeta)
+      {
+         $groupID= $groupMeta['groupID'];
+         $name= $groupMeta['groupName'];
+         $weighting= $groupMeta['weighting'];
+         $tempArray = array();
+
+         $tempArray['name'] =$name;
+         $tempArray['weighting'] =$weighting;
+
+         $criteria = agreedMarkingQueries::getCriteriaInGroup($groupID);
+
+         $tempCriteriaArray = array();
+         $currentCriteria = 0;
+         foreach ($criteria as $criteriaMeta)
+         {
+
+            $tempCriteriaListArray = array();
+            $criteriaID = $criteriaMeta['criteriaID'];
+            $criteriaName = $criteriaMeta['criteriaName'];
+            $criteriaType = $criteriaMeta['criteriaType'];
+
+            $tempCriteriaArray[$currentCriteria]['description'] = $criteriaName;
+            $tempCriteriaArray[$currentCriteria]['type'] = $criteriaType;
+            $tempCriteriaArray[$currentCriteria]['thisID'] = $criteriaID;
+
+            // Get the criteria options
+            $criteriaOptions = agreedMarkingQueries::getCriteriaOptions($criteriaID);
+
+            // Create blank array for the options
+            $tempCriteriaArray[$currentCriteria]['options'] = array();
+
+            foreach ($criteriaOptions as $optionMeta)
+            {
+               $optionID = $optionMeta['optionID'];
+               $optionValue = $optionMeta['optionValue'];
+               $tempCriteriaArray[$currentCriteria]['options'][$optionID] = $optionValue;
+
+            }
+            $currentCriteria++;
+
+
+         }
+         $tempArray['criteria'] = $tempCriteriaArray;
+
+
+         $criteriaReturnArray[] = $tempArray;
+
+
+      }
+
+
+
+      return $criteriaReturnArray;
+
+
+
+
+
+
+
+
+
 
      $formArray = array();
 
@@ -286,19 +340,73 @@ class agreedMarkingQueries
       $newItem["options"] = array();
       $newItem["thisID"] = "general-comments"; // Must be unique
       $criteriaGroup['criteria'][] = $newItem; // Add the item
-
-
-
       $formArray[] = $criteriaGroup; // Add to the main form pbject item
-
-
-
-
-
 
       return $formArray;
 
    }
+
+
+   public static function getAssignmentStudents($assignmentID)
+   {
+
+      $returnArray = array();
+      $myStudents = get_post_meta( $assignmentID, 'myStudents', true );
+
+      // Array of WP_User objects.
+      foreach ( $myStudents as $thisUsername ) {
+
+         $userMeta = imperialQueries::getUserInfo($thisUsername);
+
+         $usernameCheck = $userMeta['username'];
+         $firstName = $userMeta['first_name'];
+         $lastName = $userMeta['last_name'];
+
+         if($usernameCheck<>"")
+         {
+            $returnArray[$thisUsername] = array(
+               "firstName" => $firstName,
+               "lastName" => $lastName,
+            );
+         }
+      }
+
+      return $returnArray;
+   }
+
+   public static function getUserMarks($assignmentID, $username, $assessorUsername="")
+   {
+
+      global $wpdb;
+      global $agreedMarkingUserMarks;
+
+
+      $query = $wpdb->prepare( "SELECT * FROM $agreedMarkingUserMarks WHERE assignmentID= %d AND username = %s",
+      $assignmentID, $username);
+      $marksArray = $wpdb->get_results($query, ARRAY_A);
+
+      $returnArray= array();
+
+      foreach ($marksArray as $marksInfo)
+      {
+         $assessorUsername = $marksInfo['assessorUsername'];
+         $itemID = $marksInfo['itemID'];
+         $savedValue = stripslashes($marksInfo['savedValue']);
+
+         $returnArray[$itemID][$assessorUsername] = $savedValue;
+
+      }
+
+
+      return $returnArray;
+
+
+   }
+
+
+
+
+
 
    public static function getAssessorsForStudent($assignmentID, $username)
    {

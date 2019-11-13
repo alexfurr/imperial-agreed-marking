@@ -51,7 +51,7 @@ class agreedMarking
       wp_enqueue_script('jquery');
 
       // Global  Styles
-      wp_enqueue_style( 'imperial-agreed-marking-styles', AGREED_MARKING_URL . '/css/styles.css', array(), 0.1 );
+      wp_enqueue_style( 'imperial-agreed-marking-styles', AGREED_MARKING_URL . '/css/styles.css', array(), 0.3 );
       wp_enqueue_script('imperial-agreed-marking-js', AGREED_MARKING_URL. '/js/scripts.js', array(), 0.1 );
 
       wp_enqueue_script('ek_datatables-js', '//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js', array( 'jquery' ) );

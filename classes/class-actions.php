@@ -62,6 +62,11 @@ class agreedMarkingActions
          else
          {
 
+            if (strpos($KEY, 'textarea') !== false) {
+               $KEY = substr($KEY, strrpos($KEY, '_') + 1);
+               $VALUE = sanitize_textarea_field( $VALUE );
+            }
+
             $myFields="INSERT into $agreedMarkingUserMarks (assignmentID, username, assessorUsername, itemID, savedValue, dateSubmitted) ";
             $myFields.="VALUES (%d, %s, %s, %s, %s, %s)";
 
@@ -83,24 +88,8 @@ class agreedMarkingActions
 
 
 
+      $feedback.= imperialNetworkDraw::imperialFeedback("Marks Submitted");
 
-      /*
-      $myFields="INSERT into $thisDB (user_id, $fieldName, thisDate, date_added, OS) ";
-      $myFields.="VALUES (%d, %s, %s, %s, %s)";
-
-      $RunQry = $wpdb->query( $wpdb->prepare($myFields,
-         $currentUserID,
-         $thisData,
-         $thisDate,
-         $now,
-         $osType
-      ));
-      */
-
-
-		$feedback.='<div class="imperial-feedback imperial-feedback-success">';
-		$feedback.= 'Marks submitted';
-		$feedback.= '</div>';
 
     //  $feedback.=$feedbackReportStr;
 

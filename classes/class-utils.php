@@ -125,7 +125,7 @@ class agreedMarkingUtils
 
          }
 
-         $finalArray[$assessorUsername] = ($thisTotalMark * 100);
+         $finalArray[$assessorUsername] = round(($thisTotalMark * 100), 2);
       }
 
       $totalAverage = 0;
@@ -196,8 +196,36 @@ class agreedMarkingUtils
 
    }
 
+   public static function getCheckboxGroups($assignmentID)
+   {
+      $checkboxReturnArray = array();
+      $criteriaGroups = agreedMarkingQueries::getCriteriaGroups($assignmentID);
 
-}
+      // Get the criteria
+      foreach ($criteriaGroups as $groupMeta)
+      {
+         $groupID= $groupMeta['groupID'];
+         $criteria = agreedMarkingQueries::getCriteriaInGroup($groupID);
+
+         foreach ($criteria as $criteriaMeta)
+         {
+            $criteriaID = $criteriaMeta['criteriaID'];
+            $criteriaName = $criteriaMeta['criteriaName'];
+            $criteriaType = $criteriaMeta['criteriaType'];
+
+            if($criteriaType=="checkbox")
+            {
+
+               $checkboxReturnArray[$criteriaID] = $criteriaName;
+            }
+         }
+      }
+
+      return $checkboxReturnArray;
+   }
+
+
+} // End of class
 
 
 ?>

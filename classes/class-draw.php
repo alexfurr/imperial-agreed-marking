@@ -372,6 +372,17 @@ class agreedMarkingDraw
    public static function drawMarkingGrid($assignmentID, $username)
    {
       $assessorUsername = $_SESSION['icl_username'];
+      $formItemsArray = agreedMarkingQueries::getMarkingCriteria($assignmentID);
+
+      // Get the students marked grades
+      $savedMarks = agreedMarkingQueries::getUserMarks($assignmentID, $username);
+
+      // Get the assessor count for this student
+      $assessors = agreedMarkingQueries::getAssessorsForStudent($assignmentID, $username);
+      $assessorCount = count($assessors);
+
+      // Get the scores
+      $finalMarks = agreedMarkingUtils::getFinalMarks($assignmentID, $savedMarks);
 
       if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $assessorUsername)==false)
       {
@@ -383,17 +394,6 @@ class agreedMarkingDraw
 
 
 
-      // Get the students marked grades
-      $savedMarks = agreedMarkingQueries::getUserMarks($assignmentID, $username);
-
-      // Get the assessor count for this student
-      $assessors = agreedMarkingQueries::getAssessorsForStudent($assignmentID, $username);
-
-      $assessorCount = count($assessors);
-
-
-      // Get the scores
-      $finalMarks = agreedMarkingUtils::getFinalMarks($assignmentID, $savedMarks);
 
 
       if(isset($finalMarks[$_SESSION['icl_username']]) )
@@ -402,6 +402,17 @@ class agreedMarkingDraw
 
          $html.='<div class="finalMarkWrap">Your Mark : '.$finalMarksForThisAssessor.'%</div>';
       }
+
+
+      $args = array();
+      $args['assessors'] = $assessors;
+      $args['assessorUsername'] = $assessorUsername;
+      $args['assignmentID'] = $assignmentID;
+      $args['savedMarks'] = $savedMarks;
+
+
+      $html.= agreedMarkingDraw::showCheckboxErrors($args);
+
 
       $markingDisrepancy = agreedMarkingUtils::getMarkingDiscrepancy($finalMarks);
 
@@ -426,34 +437,35 @@ class agreedMarkingDraw
 
 
 
-      $html.='<div class="agreedMarkingAssessorListWrap">';
-      if($assessorCount >=1)
+      if($assessorCount >1)
       {
+         $html.='<div class="agreedMarkingAssessorListWrap">';
+
          $html.= 'The following assessors have marked this student';
          $html.='<ul class="agreedMarkingAssessorList">';
          foreach ($assessors as $assessorUsername => $assessorInfo)
          {
             $firstName = $assessorInfo['firstName'];
             $lastName = $assessorInfo['lastName'];
-            $html.= '<li>'.$firstName.' '.$lastName.' : '.$finalMarks[$assessorUsername].'%</li>';
+            $html.= '<li><i class="fas fa-user"></i>  '.$firstName.' '.$lastName.' : '.$finalMarks[$assessorUsername].'%</li>';
          }
          $html.='</ul>';
+         $html.='</div>';
+
 
       }
-      else
+      elseif($assessorCount==0)
       {
          $html.= 'Nobody has marked this student yet';
       }
-      $html.='</div>';
 
 
 
       // Get the current page URL
       $formAction = '?view=markStudent&myAction=markStudent&assignmentID='.$assignmentID.'&username='.$username;
-      $formItemsArray = agreedMarkingQueries::getMarkingCriteria($assignmentID);
 
 
-      $html.='<form action="'.$formAction.'" method="post" class="imperial-form">';
+      $html.='<form action="'.$formAction.'" method="post" class="imperial-form" id="myform">';
       foreach ($formItemsArray as $criteriaGroup)
       {
          $groupName = $criteriaGroup['name'];
@@ -638,10 +650,10 @@ class agreedMarkingDraw
 
 
          case "checkbox":
-            printArray($options);
             foreach ($options as $optionID => $optionValue)
             {
                $thisCheckboxID = $thisID.'_'.$optionID;
+               $thisCheckboxName = 'checkbox_'.$thisID;
 
                $isChecked = false;
                if(isset($savedMarks[$thisCheckboxID][$thisAssessessorUsername]) )
@@ -649,7 +661,7 @@ class agreedMarkingDraw
                   $isChecked = true;
                }
                $html.='<label for="'.$thisCheckboxID.'">';
-               $html.='<input type="checkbox" name="checkbox_'.$thisID.'[]" id="'.$thisCheckboxID.'" value="'.$optionID.'"';
+               $html.='<input type="checkbox"  name="'.$thisCheckboxName.'[]" id="'.$thisCheckboxID.'" value="'.$optionID.'"';
                if($isChecked){$html.=' checked ';}
                $html.='/>'.$optionValue.'</label>';
 
@@ -659,7 +671,7 @@ class agreedMarkingDraw
 
 
          case "textarea":
-            $html.='<textarea class="agreedMarkingTextarea" name="'.$thisID.'" id="'.$thisID.'">'.$savedValue.'</textarea>';
+            $html.='<textarea class="agreedMarkingTextarea" name="textarea_'.$thisID.'" id="textarea_'.$thisID.'">'.$savedValue.'</textarea>';
          break;
 
       }
@@ -854,6 +866,70 @@ class agreedMarkingDraw
 
    }
 
+   public static function showCheckboxErrors($args)
+   {
+
+
+      $html = '';
+
+      $assessors = $args['assessors'];
+      $assessorUsername = $args['assessorUsername'];
+      $assignmentID = $args['assignmentID'];
+      $savedMarks = $args['savedMarks'];
+
+      // If they have marked this then check then check for checkboxes
+      if(array_key_exists($assessorUsername, $assessors) )
+      {
+         // Check that all checkbox groups have got a grade
+         $checkboxItems = agreedMarkingUtils::getCheckboxGroups($assignmentID);
+
+         foreach ($checkboxItems as $criteriaID => $checkboxName)
+         {
+            $checkboxFeedbackGiven = false;
+            foreach ($savedMarks as $keyCheck => $theseSavedMarks)
+            {
+               if($checkboxFeedbackGiven==true){break;}
+
+               if (strpos($keyCheck, $criteriaID.'_') !== false) {
+                   foreach ($theseSavedMarks as $tempAssessor => $tempSavedMarks)
+                   {
+                      if($assessorUsername==$tempAssessor)
+                      {
+                        $checkboxFeedbackGiven = true;
+                        // Remove this checkbox from the checked array
+                        unset($checkboxItems[$criteriaID]);
+                        break;
+                      }
+                   }
+               }
+            }
+         }
+
+         $checkboxesNotMarkedCount = count($checkboxItems);
+
+         if($checkboxesNotMarkedCount>=1)
+         {
+
+
+            $feedbackText = '';
+            $feedbackText.= '<strong>There are possible problems with this submission.</strong><br/>';
+            $feedbackText.='The following checkbox groups have no feedback<hr/>';
+
+            foreach ($checkboxItems as $checkboxName)
+            {
+               $feedbackText.= ' - '. $checkboxName.' does not have any feedback<br/>';
+            }
+
+
+            $feedbackText.= '<br/>Please provide feedback from the pre-selected comments.';
+
+            $html.= imperialNetworkDraw::imperialFeedback($feedbackText, "error");
+
+         }
+      }
+
+      return $html;
+   }
 
 }
 

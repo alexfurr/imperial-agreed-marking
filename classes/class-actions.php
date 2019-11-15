@@ -37,10 +37,15 @@ class agreedMarkingActions
       {
 
          if (strpos($KEY, 'checkbox') !== false) {
-             $thisCriteriaID = substr($KEY, strrpos($KEY, '_') + 1);
+             $KEY = substr($KEY, strrpos($KEY, '_') + 1); // Get the criteriaID
+
+             $tempCheckArray = array();
              foreach ($VALUE as $thisOptionID)
              {
-                $thisUID = $thisCriteriaID.'_'.$thisOptionID;
+               $thisUID = $thisCriteriaID.'_'.$thisOptionID;
+
+               $tempCheckArray[] = $thisOptionID;
+               /*
 
                $myFields="INSERT into $agreedMarkingUserMarks (assignmentID, username, assessorUsername, itemID, savedValue, dateSubmitted) ";
                $myFields.="VALUES (%d, %s, %s, %s, %s, %s)";
@@ -54,33 +59,35 @@ class agreedMarkingActions
                1,
                $now
                ));
+               */
 
 
             }
 
-         }
-         else
-         {
 
-            if (strpos($KEY, 'textarea') !== false) {
-               $KEY = substr($KEY, strrpos($KEY, '_') + 1);
-               $VALUE = sanitize_textarea_field( $VALUE );
-            }
-
-            $myFields="INSERT into $agreedMarkingUserMarks (assignmentID, username, assessorUsername, itemID, savedValue, dateSubmitted) ";
-            $myFields.="VALUES (%d, %s, %s, %s, %s, %s)";
-
-
-            $RunQry = $wpdb->query( $wpdb->prepare($myFields,
-               $assignmentID,
-               $studentUsername,
-               $assessorUsername,
-               $KEY,
-               $VALUE,
-               $now
-            ));
+            // seralise the array
+            $VALUE = serialize($tempCheckArray);
 
          }
+
+         if (strpos($KEY, 'textarea') !== false) {
+            $KEY = substr($KEY, strrpos($KEY, '_') + 1);
+            $VALUE = sanitize_textarea_field( $VALUE );
+         }
+
+         $myFields="INSERT into $agreedMarkingUserMarks (assignmentID, username, assessorUsername, itemID, savedValue, dateSubmitted) ";
+         $myFields.="VALUES (%d, %s, %s, %s, %s, %s)";
+
+
+         $RunQry = $wpdb->query( $wpdb->prepare($myFields,
+            $assignmentID,
+            $studentUsername,
+            $assessorUsername,
+            $KEY,
+            $VALUE,
+            $now
+         ));
+
 
 
 

@@ -71,7 +71,7 @@ class agreedMarking_db {
 		dateSubmitted datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
       username varchar(255),
       assessorUsername varchar(255),
-		itemID varchar(255),
+		itemID int,
 		savedValue longtext,
 		PRIMARY KEY (ID),
       KEY studentMarks (username, assignmentID),
@@ -116,10 +116,6 @@ class agreedMarking_db {
       KEY criteriaID (criteriaID)
       ) ".$charSet;
       dbDelta( $sql );
-
-      echo $sql;
-
-
 
 
    }

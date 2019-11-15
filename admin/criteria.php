@@ -55,7 +55,7 @@ if(isset($_GET['myAction']) )
 
       case "createCriteria":
 
-        $criteriaName = sanitize_textarea_field($_POST['criteriaName']);
+        $criteriaName = $_POST['criteriaName'];
         $criteriaOrder = $_POST['criteriaOrder'];
         $criteriaType = $_POST['criteriaType'];
         $groupID = $_POST['groupID'];
@@ -103,6 +103,75 @@ if(isset($_GET['myAction']) )
 
       break;
 
+      case "createMultiOption":
+
+      $optionRange = 10;
+      $i=1;
+
+      $optionOrder = $_POST['optionOrder'];
+      $criteriaID = $_POST['criteriaID'];
+
+      // Delete the old stuff
+      $wpdb->query( $wpdb->prepare( "DELETE FROM $agreedMarkingCriteriaOptions WHERE criteriaID = %d",
+      $criteriaID  ) );
+
+      $currentNumber=1;
+
+      while ($currentNumber<=$optionRange)
+      {
+
+           $myFields="INSERT into $agreedMarkingCriteriaOptions (criteriaID, optionValue, optionOrder) ";
+           $myFields.="VALUES (%d, %s, %d)";
+
+           $RunQry = $wpdb->query( $wpdb->prepare($myFields,
+               $criteriaID,
+               $currentNumber,
+               $optionOrder
+           ));
+
+           $currentNumber++;
+           $optionOrder++;
+      }
+
+
+      break;
+
+      case "deleteCriteria":
+
+      $criteriaID = $_GET['criteriaID'];
+
+
+      if($criteriaID<>"")
+      {
+
+
+         $wpdb->query( $wpdb->prepare( "DELETE FROM $agreedMarkingCriteria WHERE criteriaID = %d",
+         $criteriaID  ) );
+
+         // Also delete the options
+         $wpdb->query( $wpdb->prepare( "DELETE FROM $agreedMarkingCriteriaOptions WHERE criteriaID = %d",
+         $criteriaID  ) );
+      }
+
+
+      break;
+
+      case "deleteOption":
+
+         $optionID = $_GET['optionID'];
+
+
+         if($optionID<>"")
+         {
+
+            // Also delete the options
+            $wpdb->query( $wpdb->prepare( "DELETE FROM $agreedMarkingCriteriaOptions WHERE optionID = %d",
+            $optionID  ) );
+         }
+
+
+      break;
+
    }
 
 
@@ -141,7 +210,7 @@ foreach ($myGroups as $groupMeta)
    $weighting = $groupMeta['weighting'];
    $groupOrder = $groupMeta['groupOrder'];
 
-   echo '<div width="100%" style="background:#003366; color:#fff; font-size:14px; padding:10px;">Group : '.$groupName.'</div>';
+   echo '<div width="100%" style="background:#003366; color:#fff; font-size:20px; padding:10px;">Group : '.$groupName.'</div>';
 
    echo '<div class="smalltext">weighting : '.$weighting.' and order : '.$groupOrder.'</div>';
    echo '<hr/>';
@@ -172,6 +241,7 @@ foreach ($myGroups as $groupMeta)
 </form><br/><br/>
    <?php
 
+
    foreach ($myCriteria as $criteriaMeta)
    {
 
@@ -183,12 +253,21 @@ foreach ($myGroups as $groupMeta)
       echo '<div style="border: 1px solid #ccc; padding:5px; margin:5px;">';
       echo $criteriaType.' ('.$criteriaOrder.')<br/>';
 
-      echo '<div width="100%" style="background:#336699; color:#fff; font-size:14px; padding:10px;">'.$criteriaName.'</div>';
+      echo '<div width="100%" style="background:#336699; color:#fff; font-size:14px; padding:10px;">'.$criteriaName;
+
+      echo '<br/><a class="button-secondary" href="?page=agreed-marking-criteria&id='.$assignmentID.'&criteriaID='.$criteriaID.'&myAction=deleteCriteria">Delete Criteria</a>';
+
+      echo '</div>';
 
 
 
 
       $myOptions = agreedMarkingQueries::getCriteriaOptions($criteriaID);
+
+      $optionCount = count($myOptions);
+
+      if($optionCount==0 && $criteriaType<>"textarea"){echo '<span style="color:red">No options</span>';}
+
 
       foreach ($myOptions as $optionMeta)
       {
@@ -198,7 +277,11 @@ foreach ($myGroups as $groupMeta)
          $optionOrder = $optionMeta['optionOrder'];
 
 
-         echo $optionValue.' ('.$optionOrder.')<hr/>';
+         echo $optionValue.' ('.$optionOrder.')';
+         echo '<br/><a class="smallText" href="?page=agreed-marking-criteria&id='.$assignmentID.'&optionID='.$optionID.'&myAction=deleteOption">Delete</a>';
+
+
+         echo '<hr/>';
 
 
       }
@@ -206,17 +289,28 @@ foreach ($myGroups as $groupMeta)
 
      <form action="?page=agreed-marking-criteria&id=<?php echo $assignmentID;?>&myAction=createOption" method="post">
      <label for="optionValue_<?php echo $criteriaID;?>">Option Value<br/>
-     <input type="text" name="optionValue" id="optionValue_<?php echo $criteriaID;?>"><label>
+     <input type="text" name="optionValue" id="optionValue_<?php echo $criteriaID;?>"></label>
      <br/>
 
 
      <br/>
      <label for="optionOrder_<?php echo $criteriaID;?>">Order<br/>
-     <input type="text" name="optionOrder" id="optionOrder_<?php echo $criteriaID;?>"><label>
+     <input type="text" name="optionOrder" id="optionOrder_<?php echo $criteriaID;?>"></label>
      <br/>
      <input type="hidden" name="criteriaID" value="<?php echo $criteriaID;?>">
      <input type="submit" value="Create New option" class="button-secondary">
      </form>
+
+
+     <hr/>
+     <strong>Batch Create</strong>
+     <form action="?page=agreed-marking-criteria&id=<?php echo $assignmentID;?>&myAction=createMultiOption" method="post">
+     <input type="hidden" name="criteriaID" value="<?php echo $criteriaID;?>">
+     <input type="submit" value="Create 1-10 rating scale option" class="button-secondary">
+     </form>
+
+
+
 
      <?php
 

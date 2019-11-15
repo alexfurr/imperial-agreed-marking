@@ -28,8 +28,6 @@ class agreedMarkingDraw
       {
          $assignmentID = $_GET['assignmentID'];
 
-         // Get the title
-         $assignmentName = get_the_title($assignmentID);
       }
 
 		//$assignmentID = (int) $atts['id']; // It's expecting a number so check using 'int'
@@ -56,28 +54,33 @@ class agreedMarkingDraw
 
 
          case "markStudent":
-            $username = $_GET['username'];
-            $studentMeta = imperialQueries::getUserInfo($username);
-            $html.='<h2>'.$assignmentName.'</h2>';
-            $html.='<h3>'.$studentMeta['first_name'].' '.$studentMeta['last_name'].'</h3>';
-            $html.=imperialThemeDraw::drawBackButton("Back to student list", "?view=studentList&assignmentID=".$assignmentID);
-            $html.='<hr/>';
-            $html.=agreedMarkingDraw::drawMarkingGrid($assignmentID, $username);
+            if(isset($_GET['username']))
+            {
+               $username = $_GET['username'];
+               $html.=agreedMarkingDraw::drawMarkingGrid($assignmentID, $username);
+            }
+            else
+            {
+               $html.='No username found';
+            }
          break;
 
          case "studentReport":
-            $username = $_GET['username'];
 
-            $studentMeta = imperialQueries::getUserInfo($username);
-            $html.='<h2>'.$assignmentName.'</h2>';
-            $html.='<h3>'.$studentMeta['first_name'].' '.$studentMeta['last_name'].'</h3>';
-            $html.='<hr/>';
+            if(isset($_GET['username']) )
+            {
+               $username = $_GET['username'];
+            }
+            else
+            {
+               $username = $_SESSION['icl_username'];
+            }
+
             $html.=agreedMarkingDraw::drawStudentFeedback($assignmentID, $username);
          break;
 
          case "studentList":
             $html.='<h2>'.$assignmentName.'</h2>';
-
             $html.=agreedMarkingDraw::drawStudentList($assignmentID);
          break;
 
@@ -208,7 +211,7 @@ class agreedMarkingDraw
          $discrepancyClass = '';
          $discrepancyText = '';
          $rowClass='';
-         if($finalMarkDiscrepancy>=FINAL_MARK_DISCREPANCY_THRESHOLD && $hasMarkedByYou==true)
+         if($finalMarkDiscrepancy>FINAL_MARK_DISCREPANCY_THRESHOLD && $hasMarkedByYou==true)
          {
             $discrepancyClass = 'failText';
             $discrepancyText='<br/><span class="smallText">'.$finalMarkDiscrepancy.'% discrepancy<span>';
@@ -244,9 +247,18 @@ class agreedMarkingDraw
             $$myStrVar.='<td><strong class="'.$discrepancyClass.'">'.$averageScore.$discrepancyText.'</strong></td>';
             $$myStrVar.='<td>';
 
-            $$myStrVar.='<a class="imperial-button" href="?view=studentReport&assignmentID='.$assignmentID.'&username='.$studentUsername.'">Preview
-               </a>';
+            $$myStrVar.='<a class="imperial-button" href="?view=studentReport&assignmentID='.$assignmentID.'&username='.$studentUsername.'">Preview</a>';
             $$myStrVar.='</td>';
+         }
+         else
+         {
+            $$myStrVar.='<td>';
+            if(current_user_can('delete_pages') && $thisMarkingCount>=1)
+            {
+               $$myStrVar.='<a class="imperial-button" href="?view=studentReport&assignmentID='.$assignmentID.'&username='.$studentUsername.'">Preview</a>';
+            }
+            $$myStrVar.='</td>';
+
          }
 
          $$myStrVar.='</tr>';
@@ -272,6 +284,7 @@ class agreedMarkingDraw
       <th>Student Name</th>
       <th>Username</th>
       <th>Marker Count</th>
+      <th></th>
       </tr></thead>';
       $markedTable.='<h3>Students Marked by you</h3>';
       $notMarkedTable.='<h3>Students Not Yet Marked by you</h3>';
@@ -371,6 +384,20 @@ class agreedMarkingDraw
 
    public static function drawMarkingGrid($assignmentID, $username)
    {
+
+
+      $html = '';
+
+      // Get the title
+      $assignmentName = get_the_title($assignmentID);
+
+      $studentMeta = imperialQueries::getUserInfo($username);
+      $html.='<h2>'.$assignmentName.'</h2>';
+      $html.='<h3>'.$studentMeta['first_name'].' '.$studentMeta['last_name'].'</h3>';
+      $html.=imperialThemeDraw::drawBackButton("Back to student list", "?view=studentList&assignmentID=".$assignmentID);
+      $html.='<hr/>';
+
+
       $assessorUsername = $_SESSION['icl_username'];
       $formItemsArray = agreedMarkingQueries::getMarkingCriteria($assignmentID);
 
@@ -389,7 +416,6 @@ class agreedMarkingDraw
          return 'You do not have access to this page';
       }
 
-      $html = '';
 
 
 
@@ -416,7 +442,7 @@ class agreedMarkingDraw
 
       $markingDisrepancy = agreedMarkingUtils::getMarkingDiscrepancy($finalMarks);
 
-      if($markingDisrepancy>=FINAL_MARK_DISCREPANCY_THRESHOLD)
+      if($markingDisrepancy>FINAL_MARK_DISCREPANCY_THRESHOLD)
       {
          $html.='<div class="imperial-feedback imperial-feedback-error">';
          $html.='<strong>Marking Discrepancy of '.$markingDisrepancy.'%</strong><br/>';
@@ -456,7 +482,7 @@ class agreedMarkingDraw
       }
       elseif($assessorCount==0)
       {
-         $html.= 'Nobody has marked this student yet';
+         $html.= '<div style="margin:3px; padding:5px; background:#f7f7f7;">Nobody has marked this student yet</div>';
       }
 
 
@@ -656,9 +682,14 @@ class agreedMarkingDraw
                $thisCheckboxName = 'checkbox_'.$thisID;
 
                $isChecked = false;
-               if(isset($savedMarks[$thisCheckboxID][$thisAssessessorUsername]) )
+               if(isset($savedMarks[$thisID][$thisAssessessorUsername]) )
                {
-                  $isChecked = true;
+
+                  $checkArray = unserialize($savedMarks[$thisID][$thisAssessessorUsername]);
+                  if(in_array($optionID, $checkArray) )
+                  {
+                     $isChecked = true;
+                  }
                }
                $html.='<label for="'.$thisCheckboxID.'">';
                $html.='<input type="checkbox"  name="'.$thisCheckboxName.'[]" id="'.$thisCheckboxID.'" value="'.$optionID.'"';
@@ -684,18 +715,37 @@ class agreedMarkingDraw
    public static function drawStudentFeedback($assignmentID, $username)
    {
 
+      $html = '';
+      $isMarker = false;
+
+
       $thisUsername = $_SESSION['icl_username'];
 
+      // Get the title
+      $assignmentName = get_the_title($assignmentID);
+
+      // Are they a marker?
       if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $thisUsername)==false)
       {
-         if($thisUsername<>$username)
+         if($thisUsername<>$username) // is this THERE student report?
          {
             return 'You do not have access to this page';
          }
-
+      }
+      else
+      {
+         $isMarker = true;
       }
 
-      $html = '';
+      $studentMeta = imperialQueries::getUserInfo($username);
+      $html.='<h2>'.$assignmentName.'</h2>';
+      $html.='<h3>'.$studentMeta['first_name'].' '.$studentMeta['last_name'].'</h3>';
+      if($isMarker==true)
+      {
+         $html.=imperialThemeDraw::drawBackButton("Back to student list", "?view=studentList&assignmentID=".$assignmentID);
+      }
+      $html.='<hr/>';
+
 
       $savedMarks = agreedMarkingQueries::getUserMarks($assignmentID, $username);
 
@@ -708,7 +758,7 @@ class agreedMarkingDraw
 
       $html.= '<div class="agreedMarksFeedbackMark">Your mark : <span class="theMark">'.$finalMark.'%</span></div>';
 
-      $formItemsArray = agreedMarkingQueries::getCriteria();
+      $formItemsArray = agreedMarkingQueries::getMarkingCriteria($assignmentID);
 
       foreach ($formItemsArray as $criteriaGroup)
       {
@@ -809,10 +859,15 @@ class agreedMarkingDraw
                $thisAverage = $tempTotal/$assessorCount;
 
             }
-
-            $thisAverage = round($thisAverage, 2);
-
-            $html.= $thisAverage.' / '.$optionCount;
+            if($thisAverage)
+            {
+               $thisAverage = round($thisAverage, 2);
+               $html.= $thisAverage.' / '.$optionCount;
+            }
+            else
+            {
+               $html.='Not yet marked';
+            }
 
          break;
 
@@ -824,14 +879,22 @@ class agreedMarkingDraw
             {
                if (strpos($KEY, $itemID) !== false)
                {
-                  foreach ($VALUE as $tempID)
+                  //unserialise the array
+                  foreach ($VALUE as $serialisedChecks)
                   {
-                     $tempCheckboxIDarray[] = $tempID;
+                     $tempCheckboxIDarray = unserialize($serialisedChecks);
+
+
+                     foreach ($tempCheckboxIDarray as $tempID)
+                     {
+                        $tempCheckboxIDarray[] = $tempID;
+                     }
                   }
                }
             }
 
             $tempCheckboxIDarray = array_unique($tempCheckboxIDarray);
+
 
 
             $i = 1;
@@ -841,7 +904,7 @@ class agreedMarkingDraw
             {
                if(is_numeric($tempOptionID) )
                {
-                  $html.='<li>'.$options[($tempOptionID-1)].'</li>';
+                  $html.='<li>'.$options[($tempOptionID)].'</li>';
                }
             }
             $html.='</ul>';
@@ -888,9 +951,11 @@ class agreedMarkingDraw
             $checkboxFeedbackGiven = false;
             foreach ($savedMarks as $keyCheck => $theseSavedMarks)
             {
-               if($checkboxFeedbackGiven==true){break;}
+               if($checkboxFeedbackGiven==true){break;} // Quit if feedback is given
 
-               if (strpos($keyCheck, $criteriaID.'_') !== false) {
+
+               if ($keyCheck== $criteriaID) {
+
                    foreach ($theseSavedMarks as $tempAssessor => $tempSavedMarks)
                    {
                       if($assessorUsername==$tempAssessor)
@@ -909,7 +974,6 @@ class agreedMarkingDraw
 
          if($checkboxesNotMarkedCount>=1)
          {
-
 
             $feedbackText = '';
             $feedbackText.= '<strong>There are possible problems with this submission.</strong><br/>';

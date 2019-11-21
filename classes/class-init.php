@@ -31,6 +31,13 @@ class agreedMarking
       global $wp_scripts;
 		$queryui = $wp_scripts->query('jquery-ui-core');
 
+      wp_enqueue_script('jquery');
+
+      wp_enqueue_script( 'jquery-ui-mouse' );
+      wp_enqueue_script( 'jquery-ui-draggable' );
+      wp_enqueue_script( 'jquery-ui-droppable' );
+      wp_enqueue_script( 'jquery-ui-sortable' );
+
 		// load the jquery ui theme for datepicker
 		$url = "https://ajax.googleapis.com/ajax/libs/jqueryui/".$queryui->ver."/themes/smoothness/jquery-ui.css";
 		wp_enqueue_style('jquery-ui-smoothness', $url, false, null);

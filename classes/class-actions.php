@@ -7,6 +7,7 @@ class agreedMarkingActions
       $feedback = '';
 
       $assessorUsername = $_SESSION['icl_username'];
+      
       if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $assessorUsername)==false)
       {
          return 'You do not have permission to do that';

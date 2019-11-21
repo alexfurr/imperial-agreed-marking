@@ -91,23 +91,79 @@ if(isset($_GET['myAction']) )
 
       break;
 
+      case "deleteMark":
+         $studentUsername=$_GET['student'];
+         $markerUsername=$_GET['markerUsername'];
+
+         global $agreedMarkingUserMarks;
+         global $wpdb;
+
+
+         $wpdb->query( $wpdb->prepare( "DELETE FROM $agreedMarkingUserMarks WHERE assessorUsername = %s and username =  %s and assignmentID = %d",
+         $markerUsername,
+         $studentUsername,
+         $assignmentID  ) );
+
+
+
+
+         // Now resave the array
+         $message = "This mark has been removed";
+         echo imperialNetworkDraw::drawAdminNotice($message);
+
+
+      break;
+
 
    }
 
 }
+$view='';
+if(isset($_GET['view']) )
+{
+   $view = $_GET['view'];
+}
+
+switch ($view)
+{
+
+   case "deleteMarkCheck":
+      $markerUsername = $_GET['markerUsername'];
+      $studentUsername = $_GET['student'];
+      $studentMeta = imperialQueries::getUserInfo($studentUsername);
+      $markerMeta = imperialQueries::getUserInfo($markerUsername);
+
+      $markerFullname = $markerMeta['first_name'].' '.$markerMeta['last_name'];
+      $studentFullname = $studentMeta['first_name'].' '.$studentMeta['last_name'];
+      echo 'Are you sure you want to remove the marks for <strong>'.$studentFullname.'</strong> submitted by <strong>'.$markerFullname.'</strong>?<br/>';
+      echo '<br/>';
+      echo 'This will delete all marks and written feedback and cannot be undone!<hr/>';
+      echo '<a href="?page=agreed-marking-users&id='.$assignmentID.'&markerUsername='.$markerUsername.'&student='.$studentUsername.'&myAction=deleteMark"class="button-primary">Yes, delete these marks</a>';
+      echo '<a href="?page=agreed-marking-users&id='.$assignmentID.'" class="button-secondary">Cancel</a>';
 
 
-echo '<div class="admin-settings-group">';
-echo '<h2>Markers</h2>';
-echo drawUserUploadForm($assignmentID, "marker");
-echo drawUserTable($assignmentID, "marker");
-echo '</div>';
+   break;
 
-echo '<div class="admin-settings-group">';
-echo '<h2>Students</h2>';
-echo drawUserUploadForm($assignmentID, "student");
-echo drawUserTable($assignmentID, "student");
-echo '</div>';
+
+   default:
+
+      echo '<div class="admin-settings-group">';
+      echo '<h2>Markers</h2>';
+      echo drawUserUploadForm($assignmentID, "marker");
+      echo drawUserTable($assignmentID, "marker");
+      echo '</div>';
+
+      echo '<div class="admin-settings-group">';
+      echo '<h2>Students</h2>';
+      echo drawUserUploadForm($assignmentID, "student");
+      echo drawUserTable($assignmentID, "student");
+      echo '</div>';
+
+   break;
+
+
+}
+
 
 
 function drawUserUploadForm($assignmentID, $userType)
@@ -162,7 +218,7 @@ function drawUserTable($assignmentID, $userType)
       case "student";
          $userArray = get_post_meta( $assignmentID, 'myStudents', true );
          $tableID="studentTable";
-         $headerArray = array("Name", "Username", "Marked Count", "Score", "");
+         $headerArray = array("Name", "Username", "Marked Count", "Markers", "Score", "");
 
          $masterMarkingStatus = agreedMarkingQueries::getAllAssignmentMarks($assignmentID);
 
@@ -233,6 +289,16 @@ function drawUserTable($assignmentID, $userType)
       if($userType=="student")
       {
          $html.='<td>'.$thisMarkingCount.'</td>';
+         $html.='<td class="smallText">';
+         foreach ($finalMarks as $KEY => $VALUE)
+         {
+            if($KEY<>"average")
+            {
+               $html.=$KEY.' : '.$VALUE.'% <a href="?page=agreed-marking-users&id='.$assignmentID.'&markerUsername='.$KEY.'&student='.$thisUsername.'&view=deleteMarkCheck">(Remove Mark)</a><br/>';
+            }
+         }
+
+         $html.='</td>';
          $html.='<td>'.$finalMark.'</td>';
       }
 

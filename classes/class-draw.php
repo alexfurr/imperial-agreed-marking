@@ -838,7 +838,6 @@ class agreedMarkingDraw
       $options = $args['options'];
       $savedMarks = $args['savedMarks'];
 
-
       $html = '';
 
       switch ($itemType)
@@ -873,10 +872,12 @@ class agreedMarkingDraw
 
          case "checkbox":
             // go through the
+            $checkboxesToShow = array();
 
             $tempCheckboxIDarray = array();
             foreach ($savedMarks as $KEY => $VALUE)
             {
+
                if (strpos($KEY, $itemID) !== false)
                {
                   //unserialise the array
@@ -887,20 +888,20 @@ class agreedMarkingDraw
 
                      foreach ($tempCheckboxIDarray as $tempID)
                      {
-                        $tempCheckboxIDarray[] = $tempID;
+                        $checkboxesToShow[] = $tempID;
                      }
                   }
                }
             }
 
-            $tempCheckboxIDarray = array_unique($tempCheckboxIDarray);
+            $checkboxesToShow = array_unique($checkboxesToShow);
 
 
 
             $i = 1;
 
             $html.='<ul>';
-            foreach ($tempCheckboxIDarray as $tempOptionID)
+            foreach ($checkboxesToShow as $tempOptionID)
             {
                if(is_numeric($tempOptionID) )
                {

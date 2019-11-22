@@ -66,6 +66,7 @@ class agreedMarkingQueries
            }
       }
 
+
       return is_array( $assignment_data ) ? $assignment_data : array();
    }
 
@@ -128,7 +129,6 @@ class agreedMarkingQueries
 
 
       }
-
 
 
       return $criteriaReturnArray;

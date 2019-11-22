@@ -30,6 +30,15 @@ class agreedMarkingCPT
 
       add_action( 'add_meta_boxes_agreed-marking', array( $this, 'addMetaBoxes' ));
 
+
+      // Add duplicate options
+      add_filter( 'post_row_actions', array($this, 'custom_quick_links'), 10, 2 );
+
+      //Check for Duplciate
+      add_action( 'plugins_loaded', array($this, 'checkForAgreedmarkingActions') );
+
+
+
 	}
 
 
@@ -253,6 +262,77 @@ class agreedMarkingCPT
 
       }
    }
+
+
+   // Remove the quick edit from this post type
+   function custom_quick_links( $actions = array(), $post = null ) {
+
+      // Abort if the post type is not "ek_question"
+      if ( ! is_post_type_archive( 'agreed-marking' ) ) {
+         return $actions;
+      }
+      // Remove the Quick Edit link
+      if ( isset( $actions['inline hide-if-no-js'] ) ) {
+         unset( $actions['inline hide-if-no-js'] );
+
+
+      }
+
+      if (current_user_can('edit_posts'))
+      {
+
+         $assignmentID = $post->ID;
+
+         //$duplicateString.='<form method="post" action="edit.php?post_type=ek_question&potID='.$postParentID.'&action=ek_question_duplicate">';
+        // $duplicateString='<a href="edit.php?post_type=agreed-marking&assignmentID='.$assignmentID.'&myAction=duplicateAssignment">Duplicate</a>';
+
+        $actionURL = 'edit.php?post_type=agreed-marking&assignmentID='.$assignmentID.'&myAction=duplicateAssignment';
+         $actions['duplicate'] = '<a href="'.$actionURL.'" title="Duplicate" rel="permalink">Duplicate</a>';
+
+       //  $actions['duplicate'] = $duplicateString;
+
+
+      }
+      // Return the set of links without Quick Edit
+      return $actions;
+   }
+
+   public function checkForAgreedmarkingActions()
+   {
+
+
+
+      $assignmentID = $_GET['assignmentID'];
+
+      $post = get_post($assignmentID);
+      $typenow = $post->post_type;
+
+
+      if( 'agreed-marking' != $typenow )
+          return;
+
+      if( isset( $_GET['myAction'] ) )
+      {
+          $action =$_GET['myAction'];
+
+          switch ($action)
+          {
+             case "duplicateAssignment":
+
+
+               if(current_user_can('delete_pages') )
+               {
+
+                  agreedMarkingActions::duplicateAssignment($assignmentID);
+                  wp_redirect( admin_url( '/edit.php?post_type=agreed-marking' ) );
+                  exit;
+               }
+             break;
+          }
+      }
+   }
+
+
 
 } //Close class
 ?>

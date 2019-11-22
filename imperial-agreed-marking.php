@@ -22,6 +22,8 @@ include_once( AGREED_MARKING_PATH . 'classes/class-queries.php' );
 include_once( AGREED_MARKING_PATH . 'classes/class-db.php' );
 include_once( AGREED_MARKING_PATH . 'classes/class-actions.php' );
 include_once( AGREED_MARKING_PATH . 'classes/class-utils.php' );
+include_once( AGREED_MARKING_PATH . 'classes/class-export.php' );
+include_once( AGREED_MARKING_PATH . 'classes/class-adminDraw.php' );
 
 //include_once( AGREED_MARKING_PATH . 'classes/class-peer-feedback.php' );
 //include_once( AGREED_MARKING_PATH . 'classes/class-database.php' );

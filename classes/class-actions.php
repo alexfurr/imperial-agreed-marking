@@ -7,6 +7,7 @@ class agreedMarkingActions
       $feedback = '';
 
       $assessorUsername = $_SESSION['icl_username'];
+      $assessorUsername = "aandi";
 
       if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $assessorUsername)==false)
       {
@@ -46,23 +47,6 @@ class agreedMarkingActions
                $thisUID = $thisCriteriaID.'_'.$thisOptionID;
 
                $tempCheckArray[] = $thisOptionID;
-               /*
-
-               $myFields="INSERT into $agreedMarkingUserMarks (assignmentID, username, assessorUsername, itemID, savedValue, dateSubmitted) ";
-               $myFields.="VALUES (%d, %s, %s, %s, %s, %s)";
-
-
-               $RunQry = $wpdb->query( $wpdb->prepare($myFields,
-               $assignmentID,
-               $studentUsername,
-               $assessorUsername,
-               $thisUID,
-               1,
-               $now
-               ));
-               */
-
-
             }
 
 
@@ -367,12 +351,93 @@ class agreedMarkingActions
       return $row_count;
    }
 
+   public static function duplicateAssignment($assignmentID)
+   {
+      //Duplicate CPT
+
+		global $wpdb;
+
+		$post = get_post( $assignmentID );
+
+		/*
+		 * if you don't want current user to be the new post author,
+		 * then change next couple of lines to this: $new_post_author = $post->post_author;
+		 */
+		$current_user = wp_get_current_user();
+		$new_post_author = $current_user->ID;
+
+		/*
+		 * new post data array
+		 */
+		$args = array(
+			'post_author'    => $new_post_author,
+			'post_content'   => $post->post_content,
+			'post_excerpt'   => $post->post_excerpt,
+			'post_name'      => $post->post_name,
+			'post_status'    => 'publish',
+			'post_title'     => $post->post_title.' (Copy)',
+			'post_type'      => $post->post_type,
+		);
+
+		/*
+		 * insert the post by wp_insert_post() function
+		 */
+		$newAssignmentID = wp_insert_post( $args );
+
+		/*
+		 * duplicate all post meta just in two SQL queries
+		 */
+		$post_meta_infos = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->postmeta WHERE post_id=$assignmentID");
+		if (count($post_meta_infos)!=0) {
+			$sql_query = "INSERT INTO $wpdb->postmeta (post_id, meta_key, meta_value) ";
+			foreach ($post_meta_infos as $meta_info) {
+				$meta_key = $meta_info->meta_key;
+				if( $meta_key == '_wp_old_slug' ) continue;
+				$meta_value = addslashes($meta_info->meta_value);
+				$sql_query_sel[]= "SELECT $newAssignmentID, '$meta_key', '$meta_value'";
+			}
+			$sql_query.= implode(" UNION ALL ", $sql_query_sel);
+			$wpdb->query($sql_query);
+		}
 
 
 
+      $markingCriteria = agreedMarkingQUeries::getMarkingCriteriaForAdmin ( $assignmentID );
 
+      foreach ($markingCriteria as $criteriaGroupInfo)
+      {
+         $criteria = $criteriaGroupInfo['criteria'];
+
+         // Change the assignment ID to the NEW assignment ID
+         $criteriaGroupInfo['groupID'] = '';
+         $newGroupID = self::save_group( $newAssignmentID, $criteriaGroupInfo );
+
+         foreach ($criteria as $criteriaInfo)
+         {
+
+            // Set the criteria group parent and clear the ID so it creates new
+            $criteriaInfo['groupID'] = $newGroupID;
+            $criteriaInfo['criteriaID'] = '';
+            $options = $criteriaInfo['options'];
+            $newCriteriaID = self::save_criteria ( $criteriaInfo );
+
+            if(is_array($options) )
+            {
+               foreach ($options as $optionInfo)
+               {
+                  // Finally set the parent criteria ID to the new one and wipe existing option ID
+                  $optionInfo['criteriaID'] =    $newCriteriaID;
+                  $optionInfo['optionID'] =  '';
+                  self::save_option ( $optionInfo );
+               }
+            }
+         }
+      }
+
+      return $newAssignmentID;
+
+
+   } // End of duplicate function
 }
-
-
 
 ?>

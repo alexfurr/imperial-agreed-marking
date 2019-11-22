@@ -6,12 +6,27 @@
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 
+
+
+
 $marking_data       = array();
 $assignmentID       = ( isset( $_GET['id'] ) ) ? intval( $_GET['id'] ) : 0;
 $assignment         = get_post( $assignmentID );
 $group_edit_id      = ( isset( $_GET['group_edit_id'] ) ) ? intval( $_GET['group_edit_id'] ) : 0;
 $view               = $group_edit_id ? 'edit_criteria' : '';
 $feedback           = '';
+
+
+// Check to see if there is any saved data to warn them
+$savedMarks = agreedMarkingQueries::getAllAssignmentMarks($assignmentID);
+
+$markedCount = count($savedMarks);
+
+if($markedCount>=1)
+{
+   $message = '<span style="color:red">WARNING!</span><br/>This assignment has saved student marks.<br/>Editing or removing criteria may result in a loss of data.';
+   echo imperialNetworkDraw::drawAdminNotice($message, $type="error");
+}
 
 
 if ( ! empty( $assignment ) ) {
@@ -36,7 +51,6 @@ if ( ! empty( $assignment ) ) {
 
     // Get the marking data
    // $marking_data = agreedMarkingActions::get_marking_data( $assignmentID );
-   // printArray($marking_data);
 
     $marking_data = agreedMarkingQueries::getMarkingCriteriaForAdmin($assignmentID);
 
@@ -74,6 +88,8 @@ if ( $assignment ) {
         <form id="marking_data" method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
     <?php
     if ( 'edit_criteria' === $view ) {
+
+
     // Edit criteria view
 
         // Check that group exists, and pick the existing criteria
@@ -89,15 +105,18 @@ if ( $assignment ) {
             }
         }
 
+
         // Draw UI
         if ( $is_editable ) {
 
             $button_class = count( $criteria ) > 0 ? '' : 'hidden-control';
 
-            echo '<h2>Criteria</h2>';
+
+            $groupName = $marking_data[ $group_index ]['groupName'];
+            echo '<h2>'.$groupName.' : Criteria</h2>';
             echo '<div id="help_message" class="message">';
             if ( empty( $criteria ) ) {
-                echo '<p>No Criteria have been added yet, click \'Add New Criteria\' below to start.</p>';
+                echo '<p>No Criteria found.</p>';
             }
             echo '</div>';
             echo '<div class="button-secondary expand-collapse has-click-event ' . $button_class . '" data-callback="expand_collapse_options" data-is-open="1">Collapse / Expand All</div>';
@@ -140,10 +159,12 @@ if ( $assignment ) {
                                     ?>
                                     <div class="option">
                                         <div class="option-order"><?php echo ( $j + 1 ); ?></div>
-                                        <input type="text" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionValue]" value="<?php echo esc_attr( $op['optionValue'] ); ?>" />
-                                        <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionOrder]" value="<?php echo intval( $op['optionOrder'] ); ?>" />
-                                        <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][criteriaID]" value="<?php echo $criteriaID; ?>" />
-                                        <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionID]" value="<?php echo $op_id; ?>" />
+                                        <div class="option-form">
+                                           <input type="text" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionValue]" value="<?php echo esc_attr( $op['optionValue'] ); ?>" />
+                                           <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionOrder]" value="<?php echo intval( $op['optionOrder'] ); ?>" />
+                                           <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][criteriaID]" value="<?php echo $criteriaID; ?>" />
+                                           <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionID]" value="<?php echo $op_id; ?>" />
+                                       </div>
                                         <div class="remove-option has-click-event" data-callback="remove_option" data-option-id="<?php echo $op_id; ?>" data-criteria-id="<?php echo $criteriaID; ?>" title="Remove Option">x</div>
                                     </div>
                                 <?php
@@ -165,7 +186,9 @@ if ( $assignment ) {
 
                 <div id="controls_bar">
                     <span class="button-secondary has-click-event" data-callback="add_new_criteria">+ Add New Criteria</span>
+                    <hr/>
                     <input type="submit" name="save_criteria_submit" value="Save Changes" class="button-primary has-click-event" data-callback="pre_criteria_submit" />
+                    <a href="options.php?page=agreed-marking-criteria&id=<?php echo $assignmentID;?>" class="button-secondary">Cancel</a>
                 </div>
 
         <?php
@@ -202,8 +225,9 @@ if ( $assignment ) {
                         <div class="group" data-saved-criteria-ids="<?php echo implode( ',', $saved_criteria_ids ); ?>">
                             <div class="display-order"><?php echo ( $i + 1 ); ?></div>
                             <div class="group-field name">
-                                <label>Group&nbsp;&nbsp;</label>
                                 <input type="text" name="groups[<?php echo $groupID; ?>][groupName]" value="<?php echo esc_attr( $group['groupName'] ); ?>" />
+                                <div class="add-edit"><a href="<?php echo $_SERVER['REQUEST_URI']; ?>&group_edit_id=<?php echo $groupID; ?>" class="button-secondary" >Add / Edit Criteria</a></div>
+
                             </div>
                             <div class="group-field weighting">
                                 <label>Weighting &nbsp;&nbsp;</label>
@@ -215,7 +239,6 @@ if ( $assignment ) {
                             </div>
 
                             <div class="remove-group has-click-event" data-callback="remove_group" data-group-id="<?php echo $groupID; ?>" title="Remove Group">Remove</div>
-                            <div class="add-edit"><a href="<?php echo $_SERVER['REQUEST_URI']; ?>&group_edit_id=<?php echo $groupID; ?>" class="button-secondary" >Add / Edit Criteria</a></div>
                             <div class="clear"></div>
                         </div>
                     <?php
@@ -557,9 +580,12 @@ echo '</pre>';
             var html = '';
             html += '<div class="option">';
             html +=     '<div class="option-order"></div>&nbsp;';
-            html +=     '<input type="text" name="criteria[' + criteria_id + '][options][' + new_id + '][optionValue]" value="" class="option-value" />';
-            html +=     '<input type="hidden" name="criteria[' + criteria_id + '][options][' + new_id + '][optionOrder]" value="" />';
-            html +=     '<input type="hidden" name="criteria[' + criteria_id + '][options][' + new_id + '][criteriaID]" value="' + criteria_id + '" />';
+            html +=         '<div class="option-form">';
+
+            html +=           '<input type="text" name="criteria[' + criteria_id + '][options][' + new_id + '][optionValue]" value="" class="option-value" />';
+            html +=           '<input type="hidden" name="criteria[' + criteria_id + '][options][' + new_id + '][optionOrder]" value="" />';
+            html +=           '<input type="hidden" name="criteria[' + criteria_id + '][options][' + new_id + '][criteriaID]" value="' + criteria_id + '" />';
+            html +=         '</div>';
             html +=     '<div class="remove-option has-click-event" data-callback="remove_option" data-criteria-id="' + criteria_id + '" title="Remove Option">x</div>';
             html += '</div>';
             return html;
@@ -577,7 +603,6 @@ echo '</pre>';
             html +=         '<div class="lightbox-controls"> ';
             html +=             '<span class="button-primary has-click-event" data-callback="save_options_window">&nbsp;&nbsp;&nbsp; Done &nbsp;&nbsp;&nbsp;</span>';
             html +=                 '&nbsp;';
-            html +=             '<span class="button-secondary has-click-event" data-callback="save_options_window">Cancel</span>';
             html +=         '</div>';
             html +=     '</div>';
             html += '</div>';
@@ -716,7 +741,7 @@ echo '</pre>';
 }
 
 .group-field.weighting {
-    width:          12%;
+    width:          200px;
 }
 
 .group-field.weighting input {
@@ -741,8 +766,8 @@ echo '</pre>';
 }
 
 .add-edit {
-    float:      left;
-    width:      130px;
+
+    margin-top:10px;
 }
 
 
@@ -807,6 +832,24 @@ echo '</pre>';
     padding:    0 0 0px 0;
 }
 
+.options-wrap .option{
+   display:flex;
+   flex-wrap: wrap;
+   justify-content: center;
+
+}
+
+.options-wrap .option .option-order
+{
+   width:20px;
+}
+
+.options-wrap .option .option-form
+{
+   flex-grow:1;
+}
+
+
 .option-order {
     color: #aaa;
     font-size: 11px;
@@ -824,12 +867,11 @@ echo '</pre>';
 }
 
 .option input {
-    width:      91%;
+    width:      100%;
     background: #fff;
 }
 
 .remove-option {
-    float: right;
     width: 20px;
     height: 20px;
     border-radius: 50%;
@@ -841,6 +883,7 @@ echo '</pre>';
     font-weight: 600;
     margin: 4px 15px 0 0;
     cursor: pointer;
+    margin:0px 10px;
 }
 
 .remove-option:hover {
@@ -879,6 +922,7 @@ echo '</pre>';
     bottom:     -1500px;
     left:       -50px;
     background: rgba(0,0,0,0.8);
+    z-index: 99;
 }
 
 .lightbox-window {

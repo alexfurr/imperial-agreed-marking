@@ -17,6 +17,7 @@ class agreedMarking
 		//Add Front End Jquery and CSS
       add_action( 'wp_head', array( $this, 'frontendEnqueues' ) );
       add_action( 'admin_enqueue_scripts', array( $this, 'adminEnqueues' ) );
+      add_action( 'wp_enqueue_scripts', array( $this, 'frontendEnqueues' ) );
 
 
 		// Setup shortcodes
@@ -63,11 +64,11 @@ class agreedMarking
 
       wp_enqueue_script('ek_datatables-js', '//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js', array( 'jquery' ) );
 		wp_enqueue_style( 'ek-datatables-css-js', '//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css' );
+
+
+      wp_enqueue_script('imperial-offline-js', AGREED_MARKING_URL. '/js/offline.js', array(jquery), 0.1 );
+
 	}
-
-
-
-
 
 
 }

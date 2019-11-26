@@ -343,14 +343,66 @@ class agreedMarkingDraw
       $html='';
 		$assessments = get_posts( $args );
       $html='<table class="imperial-table-1"><tr>';
-      $html.='<th>Assessment Name</th><th>Date</th><th>Students</th><th>Markers</th></tr>';
+  //    $html.='<th>Assessment Name</th><th>Assignment Date</th><th>Marks Release Date</th><th>Students</th><th>Markers</th></tr>';
+      $html.='<th>Assessment Name</th><th>Assignment Date</th><th>Marks Release Date</th></tr>';
 
+      $assignmentToShowCount = 0;
 		foreach ($assessments as $postMeta)
 		{
+         $isStudent=false;
          $assignmentID = $postMeta->ID;
          $assessmentDate = get_post_meta( $assignmentID, 'assessmentDate', true );
+         $releaseDate = get_post_meta( $assignmentID, 'releaseDate', true );
          $students = get_post_meta( $assignmentID, 'myStudents', true );
          $markers = get_post_meta( $assignmentID, 'myMarkers', true );
+
+         $showAssignment = false;
+
+         // Are they editor?
+         if(current_user_can('delet_posts') )
+         {
+          // $showAssignment = true;
+         }
+
+         // Are they a marker?
+         if(is_array($markers) )
+         {
+
+            if(in_array($_SESSION['icl_username'], $markers) )
+            {
+               $showAssignment = true;
+            }
+         }
+
+         // Are they a student?
+         if(is_array($students) )
+         {
+
+            if(in_array($_SESSION['icl_username'], $students) )
+            {
+               $isStudent=true;
+
+               // Check if the marking reslease date if valid
+               $now = date('Y-m-d');
+
+               if($releaseDate=="")
+               {
+                  continue;
+               }
+               if($releaseDate<=$now)
+               {
+                  $showAssignment = true;
+               }
+            }
+         }
+
+         if($showAssignment==false)
+         {
+            continue;
+         }
+
+         $assignmentToShowCount++;
+
          $studentCount = 0;
          $markerCount = 0;
 
@@ -366,16 +418,30 @@ class agreedMarkingDraw
 
          $html.='<tr>';
 			$assignmentID = $postMeta->ID;
-         $html.='<td><a href="?view=studentList&assignmentID='.$assignmentID.'">'. get_the_title($assignmentID).'</a></td>';
+
+         $thisURL = "?view=studentList&assignmentID=".$assignmentID;
+
+         if($isStudent==true)
+         {
+            $thisURL = "?view=studentReport&assignmentID=".$assignmentID;
+         }
+
+         $html.='<td><a href="'.$thisURL.'">'. get_the_title($assignmentID).'</a></td>';
 
          $html.='<td>'. $assessmentDate.' </td>';
-         $html.='<td>'. $studentCount.' </td>';
-         $html.='<td>'. $markerCount.' </td>';
+         $html.='<td>'. $releaseDate.' </td>';
+         //$html.='<td>'. $studentCount.' </td>';
+        // $html.='<td>'. $markerCount.' </td>';
 
          $html.='<tr>';
 
       }
       $html.='</table>';
+
+      if($assignmentToShowCount==0)
+      {
+         return 'No assignments found';
+      }
 
       return $html;
 
@@ -546,9 +612,11 @@ class agreedMarkingDraw
 
 
       }
-      $html.='<input type="submit" value="Submit" class="imperial-button">';
+      $html.='<input type="submit" value="Submit" class="imperial-button" id="agreedMarkingSubmitButton">';
 
       $html.='</form>';
+
+      $html.='<p id="checkOnline"></p>';
 
       return $html;
    }

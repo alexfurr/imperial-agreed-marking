@@ -180,7 +180,7 @@ class agreedMarkingCPT
 
       //Quiz Meta Metabox
       $id 			= 'agreed_meta';
-      $title 			= 'Assessment Date';
+      $title 			= 'Assessment Dates';
       $drawCallback 	= array( $this, 'drawMetaBox' );
       $screen 		= 'agreed-marking';
       $context 		= 'side';
@@ -201,6 +201,7 @@ class agreedMarkingCPT
    function drawMetaBox($post,$callbackArgs)
    {
       $assessmentDate = get_post_meta( $post->ID, 'assessmentDate', true );
+      $releaseDate = get_post_meta( $post->ID, 'releaseDate', true );
 
 
       wp_nonce_field( 'save_agreed_metabox_nonce', 'agreed_metabox_nonce' );
@@ -215,6 +216,20 @@ class agreedMarkingCPT
          });
       </script>';
       echo '<input type="text" id="assessmentDate" name="assessmentDate" value="'.$assessmentDate.'">';
+      echo '</label>';
+
+      echo '<hr/>';
+
+      echo '<label for="assessmentDate">Marks release date:';
+      echo '<script>
+         jQuery(document).ready(function() {
+            jQuery("#releaseDate").datepicker({
+               dateFormat : "yy-mm-dd"
+            });
+
+         });
+      </script>';
+      echo '<input type="text" id="releaseDate" name="releaseDate" value="'.$releaseDate.'">';
       echo '</label>';
 
 
@@ -259,6 +274,11 @@ class agreedMarkingCPT
          $assessmentDate = $_POST['assessmentDate'];
          update_post_meta( $postID, 'assessmentDate', $assessmentDate );
 
+         // Save the actual meta
+         $releaseDate = $_POST['releaseDate'];
+         update_post_meta( $postID, 'releaseDate', $releaseDate );
+
+
 
       }
    }
@@ -301,6 +321,11 @@ class agreedMarkingCPT
    {
 
 
+
+      if(!isset($_GET['assignmentID']) )
+      {
+         return;
+      }
 
       $assignmentID = $_GET['assignmentID'];
 

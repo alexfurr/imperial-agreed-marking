@@ -7,7 +7,6 @@ class agreedMarkingActions
       $feedback = '';
 
       $assessorUsername = $_SESSION['icl_username'];
-      $assessorUsername = "aandi";
 
       if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $assessorUsername)==false)
       {

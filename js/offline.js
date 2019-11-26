@@ -2,8 +2,8 @@
 
 jQuery( document ).ready(function() {
 
-   var lostInternetMessage = "<span class=\"imperial-feedback imperial-feedback-error\"><i class=\"fas fa-exclamation-triangle\"></i> Your device is no longer connected to the internet.</span><br/><span class=\"alertText\">We've disabled saving until this is fixed.<br/>But don't worry! No data will be lost if you reconnect and then submit this form.</span>";
-   var foundInternetMessage = "<span class=\"imperial-feedback imperial-feedback-success\"><i class=\"fas fa-wifi\"></i> Your device is now back online!</span>";
+   var lostInternetMessage = "<span class=\"imperial-feedback imperial-feedback-error\"><i class=\"fas fa-exclamation-triangle\"></i> Your device is no longer connected to the internet.</span><br/><span class=\"alertText\">We've disabled saving until this is fixed.<br/>But don't worry! No data will be lost if you reconnect and then submit this form.<br/>DO NOT REFRESH THIS PAGE OR PRESS THE BACK BUTTON.</span>";
+   var foundInternetMessage = "<span class=\"imperial-feedback imperial-feedback-success\"><i class=\"fas fa-wifi\"></i> Your device is online.</span>";
 
    var currentStatus = '';
 
@@ -29,9 +29,8 @@ jQuery( document ).ready(function() {
           currentStatus = "online";
           document.getElementById("checkOnline").innerHTML = foundInternetMessage;
           jQuery("#agreedMarkingSubmitButton").show();
-          setInterval(function(){
-             jQuery("#checkOnline").fadeOut("slow");
-          }, 3000);
+
+
        }
 
      } else {

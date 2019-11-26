@@ -66,7 +66,7 @@ class agreedMarking
 		wp_enqueue_style( 'ek-datatables-css-js', '//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css' );
 
 
-      wp_enqueue_script('imperial-offline-js', AGREED_MARKING_URL. '/js/offline.js', array(jquery), 0.1 );
+      wp_enqueue_script('imperial-offline-js', AGREED_MARKING_URL. '/js/offline.js', array('jquery'), 0.1 );
 
 	}
 

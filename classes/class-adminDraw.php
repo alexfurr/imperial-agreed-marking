@@ -10,6 +10,9 @@ class agreedMarkingAdminDraw
       $csvHeaderRow = array();
       $userCount = 0;
 
+      $archived = get_post_meta( $assignmentID, 'archived', true );
+
+
       switch($userType)
       {
 
@@ -23,8 +26,14 @@ class agreedMarkingAdminDraw
 
          case "student";
             $userArray = get_post_meta( $assignmentID, 'myStudents', true );
+            $cappedStudentArray = get_post_meta( $assignmentID, 'cappedStudentArray', true );
+            if(!is_array($cappedStudentArray) )
+            {
+               $cappedStudentArray = array();
+            }
+
             $tableID="studentTable";
-            $headerArray = array("Name", "Username", "Marked Count", "Markers", "Score", "");
+            $headerArray = array("Name", "Username", "Marked Count", "Markers", "Score",  "Capped", "");
 
             $masterMarkingStatus = agreedMarkingQueries::getAllAssignmentMarks($assignmentID);
 
@@ -115,12 +124,15 @@ class agreedMarkingAdminDraw
             {
                if($KEY<>"average")
                {
-                  $html.=$KEY.' : '.$VALUE.'% <a href="?page=agreed-marking-users&id='.$assignmentID.'&markerUsername='.$KEY.'&student='.$thisUsername.'&view=deleteMarkCheck">(Remove Mark)</a><br/>';
+                  $html.=$KEY.' : '.$VALUE.'% ';
+
+
+                  if($archived<>true)
+                  {
+                     $html.='<a href="?page=agreed-marking-users&id='.$assignmentID.'&markerUsername='.$KEY.'&student='.$thisUsername.'&view=deleteMarkCheck">(Remove Mark)</a><br/>';
+                  }
                   $csvRow[] = $KEY;
                   $csvRow[] = $VALUE.'%';
-
-
-
                }
 
             }
@@ -138,9 +150,30 @@ class agreedMarkingAdminDraw
             $html.='</td>';
             $html.='<td>'.$finalMark.'</td>';
             $csvRow[] = $finalMark;
+
+            $html.='<td width="80">';
+            if($archived<>true)
+            {
+               if(in_array($thisUsername, $cappedStudentArray) )
+               {
+                  $html.='<a class="button-secondary" href="?page=agreed-marking-users&id='.$assignmentID.'&view=uncapMarkCheck&username='.$thisUsername.'&userType='.$userType.'">Uncap Marks</a>';
+               }
+               else
+               {
+                  $html.='<a class="button-secondary" href="?page=agreed-marking-users&id='.$assignmentID.'&view=capMarkCheck&username='.$thisUsername.'&userType='.$userType.'">Cap Marks</a>';
+               }
+            }
+            $html.='</td>';
          }
 
-         $html.='<td><a class="button-secondary" href="?page=agreed-marking-users&id='.$assignmentID.'&myAction=removeUser&username='.$thisUsername.'&userType='.$userType.'">Remove</a></td>';
+
+
+         $html.='<td>';
+         if($archived<>true)
+         {
+            $html.='<a class="button-secondary" href="?page=agreed-marking-users&id='.$assignmentID.'&myAction=removeUser&username='.$thisUsername.'&userType='.$userType.'">Remove</a>';
+         }
+         $html.='</td>';
          $html.='</tr>';
 
          $CSVarray[] = $csvRow;

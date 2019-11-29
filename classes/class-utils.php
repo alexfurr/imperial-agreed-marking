@@ -182,15 +182,23 @@ class agreedMarkingUtils
    {
       $assignmentMarkersArray  = get_post_meta( $assignmentID, 'myMarkers', true );
 
+      if(current_user_can('edit_pages') )
+      {
+         return true;
+      }
+
+
+      if(!is_array($assignmentMarkersArray) )
+      {
+         return false;
+      }
+
+
       if(in_array($username, $assignmentMarkersArray))
       {
          return true;
       }
 
-      if(current_user_can('edit_pages') )
-      {
-         return true;
-      }
 
       return false;
 

@@ -355,13 +355,15 @@ class agreedMarkingDraw
          $releaseDate = get_post_meta( $assignmentID, 'releaseDate', true );
          $students = get_post_meta( $assignmentID, 'myStudents', true );
          $markers = get_post_meta( $assignmentID, 'myMarkers', true );
+         $isArchived = get_post_meta( $assignmentID, 'archived', true );
+
 
          $showAssignment = false;
 
          // Are they editor?
-         if(current_user_can('delet_posts') )
+         if(current_user_can('delete_posts') )
          {
-          // $showAssignment = true;
+            $showAssignment = true;
          }
 
          // Are they a marker?
@@ -426,7 +428,13 @@ class agreedMarkingDraw
             $thisURL = "?view=studentReport&assignmentID=".$assignmentID;
          }
 
-         $html.='<td><a href="'.$thisURL.'">'. get_the_title($assignmentID).'</a></td>';
+         $archivedText = '';
+         if($isArchived==true)
+         {
+            $archivedText = ' <span class="greyText">ARCHIVED</span>';
+         }
+
+         $html.='<td><a href="'.$thisURL.'">'. get_the_title($assignmentID).'</a>'.$archivedText.'</td>';
 
          $html.='<td>'. $assessmentDate.' </td>';
          $html.='<td>'. $releaseDate.' </td>';
@@ -453,6 +461,17 @@ class agreedMarkingDraw
 
 
       $html = '';
+
+      $archivedMessage = imperialNetworkDraw::imperialFeedback("This assignment has been archived and changes will not be saved.", "alert");
+
+      // Is this archived?
+      $isArchived = get_post_meta( $assignmentID, 'archived', true );
+
+      if($isArchived==true)
+      {
+         $html.=$archivedMessage;
+      }
+
 
       // Get the title
       $assignmentName = get_the_title($assignmentID);
@@ -612,7 +631,16 @@ class agreedMarkingDraw
 
 
       }
-      $html.='<input type="submit" value="Submit" class="imperial-button" id="agreedMarkingSubmitButton">';
+
+      // Only allow marking if this is not archived
+      if($isArchived==true)
+      {
+         $html.=$archivedMessage;
+      }
+      else
+      {
+         $html.='<input type="submit" value="Submit" class="imperial-button" id="agreedMarkingSubmitButton">';
+      }
 
       $html.='</form>';
 
@@ -789,6 +817,17 @@ class agreedMarkingDraw
 
       $thisUsername = $_SESSION['icl_username'];
 
+      // Get the cap
+
+      // Is the student in the cap?
+      $cappedMarks = get_post_meta( $assignmentID, 'archived', true );
+      if($cappedMarks==""){$cappedMarks=40;}
+
+      $cappedStudentArray = get_post_meta( $assignmentID, 'cappedStudentArray', true );
+      if(!is_array($cappedStudentArray) ){$cappedStudentArray = array();}
+
+
+
       // Get the title
       $assignmentName = get_the_title($assignmentID);
 
@@ -823,6 +862,17 @@ class agreedMarkingDraw
 
 
       $finalMark = $finalMarks['average'];
+
+      // Are they capped?
+      if(in_array($username, $cappedStudentArray) )
+      {
+         $feedbackText.= 'Your mark has been capped at '.$cappedMarks.'%';
+         $html.= imperialNetworkDraw::imperialFeedback($feedbackText, "alert");
+         if($finalMark>$cappedMarks)
+         {
+            $finalMark = $cappedMarks;
+         }
+      }
 
       $html.= '<div class="agreedMarksFeedbackMark">Your mark : <span class="theMark">'.$finalMark.'%</span></div>';
 

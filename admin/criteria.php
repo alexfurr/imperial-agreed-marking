@@ -11,10 +11,15 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 $marking_data       = array();
 $assignmentID       = ( isset( $_GET['id'] ) ) ? intval( $_GET['id'] ) : 0;
+$assignmentName     = get_the_title($assignmentID);
+
 $assignment         = get_post( $assignmentID );
 $group_edit_id      = ( isset( $_GET['group_edit_id'] ) ) ? intval( $_GET['group_edit_id'] ) : 0;
 $view               = $group_edit_id ? 'edit_criteria' : '';
 $feedback           = '';
+
+
+$archived = get_post_meta( $assignmentID, 'archived', true );
 
 
 // Check to see if there is any saved data to warn them
@@ -22,7 +27,14 @@ $savedMarks = agreedMarkingQueries::getAllAssignmentMarks($assignmentID);
 
 $markedCount = count($savedMarks);
 
-if($markedCount>=1)
+
+
+
+if($archived==true)
+{
+   $message = 'This assignment has been archived and changes to criteria are not possible.';
+   echo imperialNetworkDraw::drawAdminNotice($message, $type="error");
+}elseif($markedCount>=1)
 {
    $message = '<span style="color:red">WARNING!</span><br/>This assignment has saved student marks.<br/>Editing or removing criteria may result in a loss of data.';
    echo imperialNetworkDraw::drawAdminNotice($message, $type="error");
@@ -184,14 +196,21 @@ if ( $assignment ) {
             ?>
                 </div><!-- #groups_wrap.criteria-items -->
 
+                <?php
+
+                if($archived<>true)
+                {
+                ?>
                 <div id="controls_bar">
                     <span class="button-secondary has-click-event" data-callback="add_new_criteria">+ Add New Criteria</span>
                     <hr/>
                     <input type="submit" name="save_criteria_submit" value="Save Changes" class="button-primary has-click-event" data-callback="pre_criteria_submit" />
                     <a href="options.php?page=agreed-marking-criteria&id=<?php echo $assignmentID;?>" class="button-secondary">Cancel</a>
                 </div>
+                <?php
+             }
 
-        <?php
+
         } else {
             echo '<p>Parent Group not found.</p>';
             echo '<p><a href="' . $groups_url . '">Back to Groups</a></p>';
@@ -201,7 +220,7 @@ if ( $assignment ) {
     } else {
     // Default edit groups view
 
-        echo '<h2>Criteria Groups</h2>';
+        echo '<h2>'.$assignmentName.' : Criteria Groups</h2>';
         echo '<div id="help_message" class="message">';
         if ( empty( $marking_data ) ) {
             echo '<p>No Criteria Groups have been added yet, click \'Add New Group\' below to start.</p>';
@@ -246,12 +265,17 @@ if ( $assignment ) {
                 }
                 ?>
             </div><!-- #groups_wrap.group-items -->
+            <?php
+            if($archived<>true)
+            {
 
-            <div id="controls_bar">
-                <span class="button-secondary has-click-event" data-callback="add_new_group">+ Add New Group</span>
-                <input type="submit" name="save_groups_submit" value="Save Changes" class="button-primary has-click-event" data-callback="pre_groups_submit" />
-            </div>
+               ?>
+               <div id="controls_bar">
+                   <span class="button-secondary has-click-event" data-callback="add_new_group">+ Add New Group</span>
+                   <input type="submit" name="save_groups_submit" value="Save Changes" class="button-primary has-click-event" data-callback="pre_groups_submit" />
+               </div>
     <?php
+         }
     }
     ?>
 

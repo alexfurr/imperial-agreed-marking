@@ -106,6 +106,7 @@ class agreedMarkingCPT
 
       $columns['users'] = 'Markers and Students';
       $columns['assessmentDate'] = 'Assessment Date';
+      $columns['status'] = 'Status';
 
 		return $columns;
 	}
@@ -134,6 +135,18 @@ class agreedMarkingCPT
          case "assessmentDate":
             $assessmentDate = get_post_meta( $post_ID, 'assessmentDate', true );
             echo $assessmentDate;
+         break;
+
+         case "status":
+            $archived = get_post_meta( $post_ID, 'archived', true );
+            if($archived==true)
+            {
+               echo 'Archived';
+            }
+            else
+            {
+               echo 'Active';
+            }
          break;
 
 		}
@@ -178,12 +191,51 @@ class agreedMarkingCPT
 
       global $post;
 
-      //Quiz Meta Metabox
+      //Dates Metabox
       $id 			= 'agreed_meta';
       $title 			= 'Assessment Dates';
       $drawCallback 	= array( $this, 'drawMetaBox' );
       $screen 		= 'agreed-marking';
       $context 		= 'side';
+      $priority 		= 'default';
+      $callbackArgs 	= array();
+
+      add_meta_box(
+         $id,
+         $title,
+         $drawCallback,
+         $screen,
+         $context,
+         $priority,
+         $callbackArgs
+      );
+
+
+      //Dates Metabox
+      $id 			= 'capped_meta';
+      $title 			= 'Capped Marks';
+      $drawCallback 	= array( $this, 'drawCappedMetaBox' );
+      $screen 		= 'agreed-marking';
+      $context 		= 'side';
+      $priority 		= 'default';
+      $callbackArgs 	= array();
+
+      add_meta_box(
+         $id,
+         $title,
+         $drawCallback,
+         $screen,
+         $context,
+         $priority,
+         $callbackArgs
+      );
+
+      //Archive Metabox
+      $id 			= 'archive_meta';
+      $title 			= 'Archive Options';
+      $drawCallback 	= array( $this, 'drawArchiveMetaBox' );
+      $screen 		= 'agreed-marking';
+      $context 		= 'normal';
       $priority 		= 'default';
       $callbackArgs 	= array();
 
@@ -235,6 +287,39 @@ class agreedMarkingCPT
 
    }
 
+   function drawCappedMetaBox($post,$callbackArgs)
+   {
+      echo 'Capped Mark Percent<br/>';
+      $cappedMarks = get_post_meta( $post->ID, 'cappedMarks', true );
+      if($cappedMarks==""){$cappedMarks = 40;}
+      echo '<input size="3" id="cappedMarks" name="cappedMarks" value="'.$cappedMarks.'" />%';
+   }
+
+   function drawArchiveMetaBox($post,$callbackArgs)
+   {
+      $isArchived = get_post_meta( $post->ID, 'archived', true );
+
+       echo 'Archiving an assignment means that marks cannot be edited by assessors and no futher changes can be made including:
+       <ul>
+       <li>- Removing markers / students</li>
+       <li>- Addig /editing criteria</li>
+       <li>- Removing marker submissions</li>';
+
+       echo '<h4>Assignment Status</h4>';
+       echo '<label for="archiveAssignment">';
+       echo '<select id="archiveAssignment" name="archiveAssignment">';
+       echo '<option value=""';
+       if($isArchived<>true){echo ' selected';}
+       echo '>Not Archived</option>';
+       echo '<option value="true"';
+       if($isArchived==true){echo ' selected';}
+       echo '>Archived</option>';
+       echo '</select>';
+       echo '</label>';
+
+
+   }
+
 
    // Save metabox data on edit slide
    function savePostMeta ( $postID )
@@ -277,6 +362,13 @@ class agreedMarkingCPT
          // Save the actual meta
          $releaseDate = $_POST['releaseDate'];
          update_post_meta( $postID, 'releaseDate', $releaseDate );
+
+         // Save the archive
+         $archiveAssignment = $_POST['archiveAssignment'];
+         update_post_meta( $postID, 'archived', $archiveAssignment );
+
+         $cappedMarks = $_POST['cappedMarks'];
+         update_post_meta( $postID, 'cappedMarks', $cappedMarks );
 
 
 

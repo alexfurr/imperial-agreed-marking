@@ -5,6 +5,8 @@ class agreedMarkingAdminDraw
 
    public static function drawUserTable($assignmentID, $userType, $createCSV = false)
    {
+      $siteURL = get_site_url();
+
       $html='';
       $CSVarray = array();
       $csvHeaderRow = array();
@@ -33,7 +35,7 @@ class agreedMarkingAdminDraw
             }
 
             $tableID="studentTable";
-            $headerArray = array("Name", "Username", "Marked Count", "Markers", "Score",  "Capped", "");
+            $headerArray = array("Name", "Username", "Marked Count", "Markers", "Score",  "Preview", "Capped", "");
 
             $masterMarkingStatus = agreedMarkingQueries::getAllAssignmentMarks($assignmentID);
 
@@ -68,6 +70,7 @@ class agreedMarkingAdminDraw
       foreach ($userArray as $thisUsername)
       {
 
+         $thisUsername = strtolower($thisUsername);
          $csvRow = array();
          $userMeta = imperialQueries::getUserInfo($thisUsername);
 
@@ -164,6 +167,11 @@ class agreedMarkingAdminDraw
                }
             }
             $html.='</td>';
+
+            // Add the preview link
+            $previewLink = $siteURL.'/?view=studentReport&assignmentID='.$assignmentID.'&username='.$thisUsername;
+            $html.='<td><a href="'.$previewLink.'" class="button-primary" target="blank">Preview</a></td>';
+
          }
 
 
@@ -186,15 +194,16 @@ class agreedMarkingAdminDraw
       $html.="
       <script>
       jQuery(document).ready( function () {
+
+
+         jQuery('#".$tableID."').hide();
          jQuery('#".$tableID."').DataTable({
-
-
-         'pageLength': 50
-         }
-
-
-
+            'pageLength': 50
+            }
          );
+         jQuery('#".$tableID."').show();
+
+
       } );
 
       </script>

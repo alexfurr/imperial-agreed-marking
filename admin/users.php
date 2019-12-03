@@ -11,6 +11,8 @@ if(!isset($_GET['id']) )
 }
 $assignmentID = $_GET['id'];
 
+
+
 // Get the archived status
 $archived = get_post_meta( $assignmentID, 'archived', true );
 $cappedMarks = get_post_meta( $assignmentID, 'archived', true );
@@ -117,7 +119,7 @@ if($archived<>true)
             {
                $thisUser = trim($thisUser);
                if($thisUser==""){continue;}
-               $tempArray[] = $thisUser;
+               $tempArray[] = strtolower($thisUser);
             }
 
 
@@ -215,23 +217,44 @@ switch ($view)
 
    default:
 
-      echo '<div class="admin-settings-group">';
-      echo '<h2>Markers</h2>';
-      if($archived<>true)
-      {
-         echo drawUserUploadForm($assignmentID, "marker");
-      }
-      echo agreedMarkingAdminDraw::drawUserTable($assignmentID, "marker");
-      echo '</div>';
 
-      echo '<div class="admin-settings-group">';
-      echo '<h2>Students</h2>';
+
+      $markersContent = "";
       if($archived<>true)
       {
-         echo drawUserUploadForm($assignmentID, "student");
+         $markersContent.= drawUserUploadForm($assignmentID, "marker");
       }
-      echo agreedMarkingAdminDraw::drawUserTable($assignmentID, "student");
-      echo '</div>';
+      $markersContent.= agreedMarkingAdminDraw::drawUserTable($assignmentID, "marker");
+
+      $studentsContent = "";
+      if($archived<>true)
+      {
+         $studentsContent.= drawUserUploadForm($assignmentID, "student");
+      }
+      $studentsContent.= agreedMarkingAdminDraw::drawUserTable($assignmentID, "student");
+
+
+      $tabArray = array(
+
+         array(
+            "tabTitle" => 'Students',
+            "tabID" => "studentsTab",
+            "tabContent" => $studentsContent,
+         ),
+
+         array(
+            "tabTitle" => "Markers",
+            "tabID" => "markersTab",
+            "tabContent" => $markersContent,
+
+         ),
+      );
+
+      echo drawResponsiveTabs($tabArray);
+
+
+
+
 
    break;
 
@@ -242,6 +265,8 @@ switch ($view)
 
 function drawUserUploadForm($assignmentID, $userType)
 {
+
+
 
    $html='';
    $html.='<div class="agreedMarkingUploadFormWrap">';

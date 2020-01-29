@@ -12,7 +12,6 @@ if(!isset($_GET['id']) )
 $assignmentID = $_GET['id'];
 
 
-
 // Get the archived status
 $archived = get_post_meta( $assignmentID, 'archived', true );
 $cappedMarks = get_post_meta( $assignmentID, 'archived', true );
@@ -20,7 +19,6 @@ if($cappedMarks==""){$cappedMarks=40;}
 
 $cappedStudentArray = get_post_meta( $assignmentID, 'cappedStudentArray', true );
 if(!is_array($cappedStudentArray) ){$cappedStudentArray = array();}
-
 
 
 if($archived<>true)
@@ -227,10 +225,14 @@ switch ($view)
       $markersContent.= agreedMarkingAdminDraw::drawUserTable($assignmentID, "marker");
 
       $studentsContent = "";
+
+
+
       if($archived<>true)
       {
          $studentsContent.= drawUserUploadForm($assignmentID, "student");
       }
+
       $studentsContent.= agreedMarkingAdminDraw::drawUserTable($assignmentID, "student");
 
 
@@ -249,6 +251,11 @@ switch ($view)
 
          ),
       );
+
+      // Download button
+      echo '<div class="downloadAgreedMarksButton">';
+      echo '<a href="options.php?page=agreed-marking-users&id='.$assignmentID.'&myAction=downloadMarks" class="button-secondary"><i class="fas fa-download"></i> Download Marks</a>';
+      echo '</div>';
 
       echo drawResponsiveTabs($tabArray);
 
@@ -277,13 +284,6 @@ function drawUserUploadForm($assignmentID, $userType)
    $html.='</div>';
 
 
-   if($userType=="student")
-   {
-      // Download button
-      $html.='<div>';
-      $html.='<a href="options.php?page=agreed-marking-users&id='.$assignmentID.'&myAction=downloadMarks" class="button-secondary"><i class="fas fa-download"></i> Download Marks</a>';
-      $html.='</div>';
-   }
    $html.='</div>';
 
    $html.='<div id="userDiv_'.$userType.'" style="display:none;">';

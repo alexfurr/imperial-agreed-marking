@@ -424,7 +424,6 @@ class agreedMarkingCPT
       $post = get_post($assignmentID);
       $typenow = $post->post_type;
 
-
       if( 'agreed-marking' != $typenow )
           return;
 

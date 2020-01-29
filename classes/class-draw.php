@@ -363,7 +363,7 @@ class agreedMarkingDraw
          // Are they editor?
          if(current_user_can('delete_posts') )
          {
-            $showAssignment = true;
+            //$showAssignment = true;
          }
 
          // Are they a marker?

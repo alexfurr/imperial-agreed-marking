@@ -39,6 +39,7 @@ class agreedMarkingAdminDraw
 
             $masterMarkingStatus = agreedMarkingQueries::getAllAssignmentMarks($assignmentID);
 
+
          break;
       }
 
@@ -96,6 +97,7 @@ class agreedMarkingAdminDraw
             if(array_key_exists($thisUsername, $masterMarkingStatus) )
             {
                $markersArray = $masterMarkingStatus[$thisUsername];
+
                $thisMarkingCount = count($markersArray);
 
             }

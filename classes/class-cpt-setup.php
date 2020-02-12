@@ -211,10 +211,10 @@ class agreedMarkingCPT
       );
 
 
-      //Dates Metabox
-      $id 			= 'capped_meta';
-      $title 			= 'Capped Marks';
-      $drawCallback 	= array( $this, 'drawCappedMetaBox' );
+      //Options
+      $id 			= 'options_meta';
+      $title 			= 'Criteria Type';
+      $drawCallback 	= array( $this, 'drawOptionsMetaBox' );
       $screen 		= 'agreed-marking';
       $context 		= 'side';
       $priority 		= 'default';
@@ -287,13 +287,30 @@ class agreedMarkingCPT
 
    }
 
-   function drawCappedMetaBox($post,$callbackArgs)
+
+   function drawOptionsMetaBox($post,$callbackArgs)
    {
+       $cappedMarks = get_post_meta( $post->ID, 'cappedMarks', true );
+       $useStepScale = get_post_meta( $post->ID, 'useStepScale', true );
+
       echo 'Capped Mark Percent<br/>';
-      $cappedMarks = get_post_meta( $post->ID, 'cappedMarks', true );
       if($cappedMarks==""){$cappedMarks = 40;}
       echo '<input size="3" id="cappedMarks" name="cappedMarks" value="'.$cappedMarks.'" />%';
+
+      echo '<hr/>';
+      echo '<label for="useStepScale">';
+      echo '<input type="checkbox" id="useStepScale" name="useStepScale" ';
+      if($useStepScale=="on")
+      {
+          echo ' checked ';
+      }
+      echo '/>Use college stepped scale</label>';
+
+
    }
+
+
+
 
    function drawArchiveMetaBox($post,$callbackArgs)
    {
@@ -369,6 +386,11 @@ class agreedMarkingCPT
 
          $cappedMarks = $_POST['cappedMarks'];
          update_post_meta( $postID, 'cappedMarks', $cappedMarks );
+
+         $useStepScale = $_POST['useStepScale'];
+         update_post_meta( $postID, 'useStepScale', $useStepScale );
+
+
 
 
 

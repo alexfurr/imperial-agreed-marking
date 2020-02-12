@@ -491,6 +491,7 @@ class agreedMarkingDraw
 
       // Get the assessor count for this student
       $assessors = agreedMarkingQueries::getAssessorsForStudent($assignmentID, $username);
+
       $assessorCount = count($assessors);
 
       // Get the scores
@@ -502,17 +503,12 @@ class agreedMarkingDraw
       }
 
 
-
-
-
-
-
       if(isset($finalMarks[$_SESSION['icl_username']]) )
       {
          $finalMarksForThisAssessor = $finalMarks[$_SESSION['icl_username']];
-
          $html.='<div class="finalMarkWrap">Your Mark : '.$finalMarksForThisAssessor.'%</div>';
       }
+
 
 
       $args = array();
@@ -660,6 +656,7 @@ class agreedMarkingDraw
       $thisID = $args['thisID'];
       $assessors = $args['assessors'];
       $savedValue = '';
+
       if(!is_array($savedMarks) ) { $savedMarks = array(); }
 
       if(!is_array($options)){$options = array(); } // if there are no options create blank array
@@ -680,20 +677,36 @@ class agreedMarkingDraw
       switch ($itemType)
       {
 
-         case "radio":
+          case "radio":
+          case "stepScale":
             $optionNumber = 1;
 
+            if($itemType=="stepScale")
+            {
+                $options = agreedMarkingQueries::getStepScale();
+            }
+
             $html.='<div class="formItemRadioWrap">';
+
 
             foreach ($options as $optionValue)
             {
 
                $thisRadioID = $thisID.'_'.$optionNumber;
 
+               $optionValue = $optionNumber;
+
+               // Convert the value to an actual percent if its stepScale
+
+               if($itemType=="stepScale")
+               {
+                   $optionValue = $options[$optionNumber-1];
+               }
+
                $html.='<label for="'.$thisRadioID.'">';
                $html.='<span>'.$optionValue.'</span>';
-               $html.='<span><input required type="radio" name="'.$thisID.'" id="'.$thisRadioID.'" value="'.$optionNumber.'"';
-               if($optionNumber==$savedValue){$html.=' checked ';}
+               $html.='<span><input required type="radio" name="'.$thisID.'" id="'.$thisRadioID.'" value="'.$optionValue.'"';
+               if($optionValue==$savedValue){$html.=' checked ';}
                $html.='/></span></label>';
                $optionNumber++;
             }
@@ -810,6 +823,8 @@ class agreedMarkingDraw
 
    public static function drawStudentFeedback($assignmentID, $username)
    {
+
+       echo 'test';
 
       $html = '';
       $isMarker = false;

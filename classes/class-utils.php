@@ -30,33 +30,38 @@ class agreedMarkingUtils
    public static function getFinalMarks($assignmentID, $savedMarks)
    {
 
+       // Check if its a step criteria
+
+       $useStepScale = get_post_meta( $assignmentID, 'useStepScale', true );
+
+
 
       // Get the weightings
-
       $criteriaGroups = agreedMarkingQueries::getMarkingCriteria($assignmentID);
 
       $totalAssessorTracker = array();
 
-      foreach ($criteriaGroups as $critertaGroupMeta)
+      foreach ($criteriaGroups as $criteriaGroupMeta)
       {
 
          $tempAssessorMarksArray = array();
 
-         $name = $critertaGroupMeta['name'];
-         $weighting = $critertaGroupMeta['weighting'];
-         $criteria = $critertaGroupMeta['criteria'];
+
+         $name = $criteriaGroupMeta['name'];
+         $weighting = $criteriaGroupMeta['weighting'];
+         $criteria = $criteriaGroupMeta['criteria'];
 
          $totalGroupAvailableMarks = 0;
 
          foreach ($criteria as $criteriaInfo)
          {
             $criteraID = $criteriaInfo['thisID'];
-            if($criteriaInfo['type']<>"radio"){continue;}
 
+            $type = $criteriaInfo['type'];
 
+            if($type<>"radio" && $type<>"stepScale" ){continue;}
 
             $criteriaOptions = $criteriaInfo['options'];
-
             $optionCount = 0;
 
             if(is_array($criteriaOptions) )
@@ -64,9 +69,16 @@ class agreedMarkingUtils
                $optionCount = count($criteriaOptions);
             }
 
-            $totalGroupAvailableMarks = $totalGroupAvailableMarks+$optionCount;
-            $criteriaID = $criteriaInfo['thisID'];
+            if($type=="stepScale")
+            {
+                $totalGroupAvailableMarks = $totalGroupAvailableMarks+100;
+            }
+            else
+            {
+                $totalGroupAvailableMarks = $totalGroupAvailableMarks+$optionCount;
+            }
 
+            $criteriaID = $criteriaInfo['thisID'];
 
             // Get the saved values for this criteria
             $thisSavedMarks = array();
@@ -78,7 +90,6 @@ class agreedMarkingUtils
 
             foreach($thisSavedMarks as $assessorUsername => $thisMark)
             {
-               //echo $assessorUsername.' gave '.$thisMark.' / '.$optionCount.'<br/>';
 
                $tempAssessorMarksArray[$assessorUsername][] = $thisMark;
             }
@@ -93,6 +104,7 @@ class agreedMarkingUtils
             $tempTotal = 0;
             foreach ($tempCriteriaAssessorMarks as $thisMark)
             {
+
                $tempTotal = $tempTotal + $thisMark;
             }
 

@@ -111,25 +111,36 @@ class agreedMarkingQueries
             // Create blank array for the options
             $tempCriteriaArray[$currentCriteria]['options'] = array();
 
-            foreach ($criteriaOptions as $optionMeta)
+            if($criteriaType=="stepScale")
             {
-               $optionID = $optionMeta['optionID'];
-               $optionValue = $optionMeta['optionValue'];
-               $tempCriteriaArray[$currentCriteria]['options'][$optionID] = $optionValue;
+                $options = agreedMarkingQueries::getStepScale();
+                foreach ($options as $optionValue)
+                {
+                   $tempCriteriaArray[$currentCriteria]['options'][$optionValue] = $optionValue;
+
+                }
+            }
+            else
+            {
+                foreach ($criteriaOptions as $optionMeta)
+                {
+                   $optionID = $optionMeta['optionID'];
+                   $optionValue = $optionMeta['optionValue'];
+                   $tempCriteriaArray[$currentCriteria]['options'][$optionID] = $optionValue;
+
+                }
 
             }
+
             $currentCriteria++;
 
 
          }
          $tempArray['criteria'] = $tempCriteriaArray;
 
-
          $criteriaReturnArray[] = $tempArray;
 
-
       }
-
 
       return $criteriaReturnArray;
 
@@ -259,6 +270,13 @@ class agreedMarkingQueries
 
 
       return $returnArray;
+
+   }
+
+   public static function getStepScale()
+   {
+       $array = array(0,5,10,15,20,25,30,35,38,42,45,48,52,55,58,62,68,72,76,80,85,90,95,100);
+       return $array;
 
    }
 

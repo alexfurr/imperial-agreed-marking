@@ -20,7 +20,7 @@ $feedback           = '';
 
 
 $archived = get_post_meta( $assignmentID, 'archived', true );
-
+$useStepScale = get_post_meta( $assignmentID, 'useStepScale', true );
 
 // Check to see if there is any saved data to warn them
 $savedMarks = agreedMarkingQueries::getAllAssignmentMarks($assignmentID);
@@ -33,12 +33,21 @@ $markedCount = count($savedMarks);
 if($archived==true)
 {
    $message = 'This assignment has been archived and changes to criteria are not possible.';
-   echo imperialNetworkDraw::drawAdminNotice($message, $type="error");
+   echo imperialNetworkDraw::drawAdminNotice($message, "warning");
 }elseif($markedCount>=1)
 {
    $message = '<span style="color:red">WARNING!</span><br/>This assignment has saved student marks.<br/>Editing or removing criteria may result in a loss of data.';
-   echo imperialNetworkDraw::drawAdminNotice($message, $type="error");
+   echo imperialNetworkDraw::drawAdminNotice($message, "warning");
 }
+
+if($useStepScale==true)
+{
+   $message = 'This assignment uses the College stepped scale and so custom criteria scales are not possible.';
+   echo imperialNetworkDraw::drawAdminNotice($message, "warning");
+
+}
+
+
 
 
 if ( ! empty( $assignment ) ) {
@@ -141,7 +150,13 @@ if ( $assignment ) {
 
                 $criteriaID = intval( $c['criteriaID'] );
                 $button_class = 'radio'     == $c['criteriaType'] ? '' : 'hidden-control';
-                $window_class = 'textarea'  == $c['criteriaType'] ? 'hidden-control' : '';
+
+                $responseType =  $c['criteriaType'];
+                $window_class = '';
+                if($responseType=="textarea" || $responseType=="stepScale")
+                {
+                    $window_class = 'hidden-control';
+                }
                 ?>
                     <div class="group">
                         <div class="display-order"><?php echo ( $i + 1 ); ?></div>
@@ -150,7 +165,22 @@ if ( $assignment ) {
                             <input type="text" name="criteria[<?php echo $criteriaID; ?>][criteriaName]" value="<?php echo esc_attr( $c['criteriaName'] ); ?>" />
                             <br><label>Response Type &nbsp;&nbsp;</label>
                             <select name="criteria[<?php echo $criteriaID; ?>][criteriaType]" class="has-change-event" data-callback="change_criteria_type" data-criteria-id="<?php echo $criteriaID; ?>">
-                                <option value="radio"<?php echo ( 'radio' === $c['criteriaType'] ? ' SELECTED' : '' ); ?>>Radio Buttons</option>
+
+                                <?php
+                                if($useStepScale=="on")
+                                {
+                                    ?>
+                                    <option value="stepScale"<?php echo ( 'stepScale' === $c['criteriaType'] ? ' SELECTED' : '' ); ?>>Step Scale</option>
+                                    <?php
+                                }
+                                else
+                                {
+                                    ?>
+                                    <option value="radio"<?php echo ( 'radio' === $c['criteriaType'] ? ' SELECTED' : '' ); ?>>Radio Buttons</option>
+                                <?php
+                                }
+                                ?>
+
                                 <option value="checkbox"<?php echo ( 'checkbox' === $c['criteriaType'] ? ' SELECTED' : '' ); ?>>Check Boxes</option>
                                 <option value="textarea"<?php echo ( 'textarea' === $c['criteriaType'] ? ' SELECTED' : '' ); ?>>Text Area</option>
                             </select>
@@ -163,30 +193,33 @@ if ( $assignment ) {
 
                         <div class="options-window <?php echo $window_class; ?>" id="options_window_<?php echo $criteriaID; ?>">
                             <h2>Responses</h2>
-                            <div id="options_wrap_<?php echo $criteriaID; ?>" class="options-wrap">
-                            <?php
-                            if ( is_array( $criteria[ $i ]['options'] ) ) {
-                                foreach ( $criteria[ $i ]['options'] as $j => $op ) {
-                                    $op_id = intval( $op['optionID'] );
-                                    ?>
-                                    <div class="option">
-                                        <div class="option-order"><?php echo ( $j + 1 ); ?></div>
-                                        <div class="option-form">
-                                           <input type="text" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionValue]" value="<?php echo esc_attr( $op['optionValue'] ); ?>" />
-                                           <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionOrder]" value="<?php echo intval( $op['optionOrder'] ); ?>" />
-                                           <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][criteriaID]" value="<?php echo $criteriaID; ?>" />
-                                           <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionID]" value="<?php echo $op_id; ?>" />
-                                       </div>
-                                        <div class="remove-option has-click-event" data-callback="remove_option" data-option-id="<?php echo $op_id; ?>" data-criteria-id="<?php echo $criteriaID; ?>" title="Remove Option">x</div>
-                                    </div>
+
+                                <div id="options_wrap_<?php echo $criteriaID; ?>" class="options-wrap">
                                 <?php
+                                if ( is_array( $criteria[ $i ]['options'] ) ) {
+                                    foreach ( $criteria[ $i ]['options'] as $j => $op ) {
+                                        $op_id = intval( $op['optionID'] );
+                                        ?>
+                                        <div class="option">
+                                            <div class="option-order"><?php echo ( $j + 1 ); ?></div>
+                                            <div class="option-form">
+                                               <input type="text" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionValue]" value="<?php echo esc_attr( $op['optionValue'] ); ?>" />
+                                               <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionOrder]" value="<?php echo intval( $op['optionOrder'] ); ?>" />
+                                               <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][criteriaID]" value="<?php echo $criteriaID; ?>" />
+                                               <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionID]" value="<?php echo $op_id; ?>" />
+                                           </div>
+                                            <div class="remove-option has-click-event" data-callback="remove_option" data-option-id="<?php echo $op_id; ?>" data-criteria-id="<?php echo $criteriaID; ?>" title="Remove Option">x</div>
+                                        </div>
+                                    <?php
+                                    }
                                 }
-                            }
-                            ?>
-                            </div>
+                                ?>
+                                </div>
+                            <div class="test123">
                             <span class="button-secondary has-click-event" data-callback="add_new_option" data-criteria-id="<?php echo $criteriaID; ?>">+ Add Response Option</span>
                             &nbsp;<span class="button-secondary make-numeric-scale has-click-event <?php echo $button_class; ?>" data-callback="make_numeric_scale" data-criteria-id="<?php echo $criteriaID; ?>">Create 1-10</span>
                             &nbsp;<span class="button-secondary has-click-event" data-callback="launch_options_window" data-criteria-id="<?php echo $criteriaID; ?>">Sort Order</span>
+                            </div>
                         </div>
                         <div class="clear"></div>
                         <div class="remove-criteria has-click-event" data-callback="remove_criteria" data-criteria-id="<?php echo $criteriaID; ?>" title="Remove Criteria">Remove</div>
@@ -382,6 +415,8 @@ echo '</pre>';
             jQuery('input[name="criteria[' + new_id + '][criteriaName]"]').focus();
             jQuery('#help_message').empty();
             jQuery('.expand-collapse').css({ 'display' : 'inline-block' });
+            jQuery('#options_window_' + new_id ).hide();
+
         },
 
         //---
@@ -399,6 +434,7 @@ echo '</pre>';
         //---
         change_criteria_type: function ( e ) {
             var selected    = jQuery( e.target ).val();
+            console.log(selected);
             var criteria_id = jQuery( e.target ).attr('data-criteria-id');
             if ( 'radio' === selected ) {
                 jQuery('#options_window_' + criteria_id ).show();
@@ -408,6 +444,8 @@ echo '</pre>';
                 jQuery('#options_window_' + criteria_id + ' .make-numeric-scale').hide();
 
             } else if ( 'textarea' === selected ) {
+                jQuery('#options_window_' + criteria_id ).hide();
+            } else if ( 'stepScale' === selected ) {
                 jQuery('#options_window_' + criteria_id ).hide();
             }
         },
@@ -577,7 +615,23 @@ echo '</pre>';
             html +=         '<input type="text" name="criteria[' + new_id + '][criteriaName]" value="" />';
             html +=         '<br><label>Response Type &nbsp;&nbsp;</label>';
             html +=         '<select name="criteria[' + new_id + '][criteriaType]" class="has-change-event" data-callback="change_criteria_type" data-criteria-id="' + new_id + '">';
-            html +=             '<option value="radio" SELECTED>Radio Buttons</option>';
+            html +=             '<option value="" SELECTED>Please Select</option>';
+            <?php
+            if($useStepScale=="on")
+            {
+                ?>
+                html +=             '<option value="stepScale">Step Scale</option>';
+                <?php
+
+            }
+            else
+            {
+                ?>
+                html +=             '<option value="radio">Radio Buttons</option>';
+                <?php
+
+            }
+            ?>
             html +=             '<option value="checkbox">Check Boxes</option>';
             html +=             '<option value="textarea">Text Area</option>';
             html +=         '</select>';
@@ -596,6 +650,8 @@ echo '</pre>';
             html +=     '<div class="clear"></div>';
             html +=     '<div class="remove-criteria has-click-event" data-callback="remove_criteria" title="Remove Criteria">Remove</div>';
             html += '</div>';
+
+
             return html;
         },
 

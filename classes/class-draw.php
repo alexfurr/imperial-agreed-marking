@@ -460,6 +460,7 @@ class agreedMarkingDraw
    {
 
 
+
       $html = '';
 
       $archivedMessage = imperialNetworkDraw::imperialFeedback("This assignment has been archived and changes will not be saved.", "alert");
@@ -824,8 +825,6 @@ class agreedMarkingDraw
    public static function drawStudentFeedback($assignmentID, $username)
    {
 
-       echo 'test';
-
       $html = '';
       $isMarker = false;
 
@@ -1002,6 +1001,34 @@ class agreedMarkingDraw
             }
 
          break;
+
+         case "stepScale":
+            $tempTotal = 0;
+            $assessorCount = 0;
+
+            if($thisFeedback)
+            {
+               foreach ($thisFeedback as $tempValue)
+               {
+                  $tempTotal = $tempTotal + $tempValue;
+                  $assessorCount++;
+               }
+               $thisAverage = $tempTotal/$assessorCount;
+
+            }
+            if($thisAverage)
+            {
+               $thisAverage = round($thisAverage, 2);
+               $html.= $thisAverage.'% ';
+            }
+            else
+            {
+               $html.='Not yet marked';
+            }
+
+         break;
+
+
 
          case "checkbox":
             // go through the

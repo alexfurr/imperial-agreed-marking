@@ -275,7 +275,7 @@ class agreedMarkingQueries
 
    public static function getStepScale()
    {
-       $array = array(0,5,10,15,20,25,30,35,38,42,45,48,52,55,58,62,68,72,76,80,85,90,95,100);
+       $array = array(0,5,10,15,20,25,30,35,38,42,45,48,52,55,58,62,65,68,72,76,80,85,90,95,100);
        return $array;
 
    }

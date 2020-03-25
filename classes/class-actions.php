@@ -9,7 +9,9 @@ class agreedMarkingActions
       // New comment Test git 4
 
 
-      $assessorUsername = $_SESSION['icl_username'];
+      $current_user = wp_get_current_user();
+      $assessorUsername = $current_user->user_login;
+
 
       if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $assessorUsername)==false)
       {

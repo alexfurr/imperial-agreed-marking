@@ -73,7 +73,9 @@ class agreedMarkingDraw
             }
             else
             {
-               $username = $_SESSION['icl_username'];
+
+                $current_user = wp_get_current_user();
+                $username = $current_user->user_login;
             }
 
             $html.=agreedMarkingDraw::drawStudentFeedback($assignmentID, $username);
@@ -99,7 +101,8 @@ class agreedMarkingDraw
    public static function drawStudentList($assignmentID)
    {
 
-      $thisUsername = $_SESSION['icl_username'];
+      $current_user = wp_get_current_user();
+      $thisUsername = $current_user->user_login;
 
       $notMarkedByYouTable = '';
       $markedByYouTable = '';
@@ -334,10 +337,17 @@ class agreedMarkingDraw
    public static function drawAssignmentList()
    {
 
+
+
+         $current_user = wp_get_current_user();
+         $thisUsername = $current_user->user_login;
+
       // Now go through all existing post meta and save the  info
 		$args = array(
 		'post_type' => "agreed-marking",
 		);
+
+
 
 
       $html='';
@@ -370,7 +380,9 @@ class agreedMarkingDraw
          if(is_array($markers) )
          {
 
-            if(in_array($_SESSION['icl_username'], $markers) )
+
+
+            if(in_array($thisUsername, $markers) )
             {
                $showAssignment = true;
             }
@@ -380,7 +392,7 @@ class agreedMarkingDraw
          if(is_array($students) )
          {
 
-            if(in_array($_SESSION['icl_username'], $students) )
+            if(in_array($thisUsername, $students) )
             {
                $isStudent=true;
 
@@ -459,6 +471,8 @@ class agreedMarkingDraw
    public static function drawMarkingGrid($assignmentID, $username)
    {
 
+       $current_user = wp_get_current_user();
+       $loggedInUsername = $current_user->user_login;
 
 
       $html = '';
@@ -483,8 +497,8 @@ class agreedMarkingDraw
       $html.=imperialThemeDraw::drawBackButton("Back to student list", "?view=studentList&assignmentID=".$assignmentID);
       $html.='<hr/>';
 
-
-      $assessorUsername = $_SESSION['icl_username'];
+      $current_user = wp_get_current_user();
+      $assessorUsername = $current_user->user_login;
       $formItemsArray = agreedMarkingQueries::getMarkingCriteria($assignmentID);
 
       // Get the students marked grades
@@ -504,9 +518,9 @@ class agreedMarkingDraw
       }
 
 
-      if(isset($finalMarks[$_SESSION['icl_username']]) )
+      if(isset($finalMarks[$loggedInUsername]) )
       {
-         $finalMarksForThisAssessor = $finalMarks[$_SESSION['icl_username']];
+         $finalMarksForThisAssessor = $finalMarks[$loggedInUsername];
          $html.='<div class="finalMarkWrap">Your Mark : '.$finalMarksForThisAssessor.'%</div>';
       }
 
@@ -664,7 +678,7 @@ class agreedMarkingDraw
 
 
 
-      $thisAssessessorUsername = $_SESSION['icl_username'];
+      $thisAssessessorUsername = $loggedInUsername;
       $isMarkedByYou = false;
       if(isset($savedMarks[$thisID][$thisAssessessorUsername]) )
       {
@@ -828,9 +842,9 @@ class agreedMarkingDraw
       $html = '';
       $isMarker = false;
 
-
-      $thisUsername = $_SESSION['icl_username'];
-
+      $current_user = wp_get_current_user();
+      $thisUsername = $current_user->user_login;
+      
       // Get the cap
 
       // Is the student in the cap?
@@ -964,6 +978,8 @@ class agreedMarkingDraw
 
    public static function drawFormItemFeedback($args)
    {
+
+
       $itemType = $args['itemType'];
       $itemID = $args['itemID'];
       $thisFeedback = $args['thisFeedback'];

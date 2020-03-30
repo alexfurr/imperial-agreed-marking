@@ -474,7 +474,6 @@ class agreedMarkingDraw
        $current_user = wp_get_current_user();
        $loggedInUsername = $current_user->user_login;
 
-
       $html = '';
 
       $archivedMessage = imperialNetworkDraw::imperialFeedback("This assignment has been archived and changes will not be saved.", "alert");
@@ -497,8 +496,10 @@ class agreedMarkingDraw
       $html.=imperialThemeDraw::drawBackButton("Back to student list", "?view=studentList&assignmentID=".$assignmentID);
       $html.='<hr/>';
 
-      $current_user = wp_get_current_user();
-      $assessorUsername = $current_user->user_login;
+      //$current_user = wp_get_current_user();
+      //$assessorUsername = $current_user->user_login;
+
+
       $formItemsArray = agreedMarkingQueries::getMarkingCriteria($assignmentID);
 
       // Get the students marked grades
@@ -512,7 +513,7 @@ class agreedMarkingDraw
       // Get the scores
       $finalMarks = agreedMarkingUtils::getFinalMarks($assignmentID, $savedMarks);
 
-      if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $assessorUsername)==false)
+      if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $loggedInUsername)==false)
       {
          return 'You do not have access to this page';
       }
@@ -534,7 +535,6 @@ class agreedMarkingDraw
 
 
       $html.= agreedMarkingDraw::showCheckboxErrors($args);
-
 
       $markingDisrepancy = agreedMarkingUtils::getMarkingDiscrepancy($finalMarks);
 
@@ -632,6 +632,7 @@ class agreedMarkingDraw
                "savedMarks" => $savedMarks,
                "thisID" => $thisID,
                "assessors" => $assessors,
+               "loggedInUsername" => $loggedInUsername,
             );
 
             $html.=agreedMarkingDraw::drawFormItem($args);
@@ -664,13 +665,16 @@ class agreedMarkingDraw
    {
 
 
+
       $description = $args['description'];
       $itemType = $args['itemType'];
       $options = $args['options'];
       $savedMarks = $args['savedMarks'];
       $thisID = $args['thisID'];
       $assessors = $args['assessors'];
+      $loggedInUsername = $args['loggedInUsername'];
       $savedValue = '';
+
 
       if(!is_array($savedMarks) ) { $savedMarks = array(); }
 
@@ -685,6 +689,7 @@ class agreedMarkingDraw
          $savedValue = $savedMarks[$thisID][$thisAssessessorUsername];
          $isMarkedByYou = true;
       }
+
 
       $html = '<div class="agreedMarkingFormItem item_'.$itemType.'">';
       $html.='<div class="formItemDescription">'.$description.'</div>';
@@ -717,6 +722,7 @@ class agreedMarkingDraw
                {
                    $optionValue = $options[$optionNumber-1];
                }
+
 
                $html.='<label for="'.$thisRadioID.'">';
                $html.='<span>'.$optionValue.'</span>';
@@ -844,7 +850,7 @@ class agreedMarkingDraw
 
       $current_user = wp_get_current_user();
       $thisUsername = $current_user->user_login;
-      
+
       // Get the cap
 
       // Is the student in the cap?

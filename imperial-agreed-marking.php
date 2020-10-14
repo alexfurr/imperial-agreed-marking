@@ -29,7 +29,7 @@ include_once( AGREED_MARKING_PATH . 'classes/class-adminDraw.php' );
 //include_once( AGREED_MARKING_PATH . 'classes/class-database.php' );
 //include_once( AGREED_MARKING_PATH . 'classes/class-utils.php' );
 
-define( 'FINAL_MARK_DISCREPANCY_THRESHOLD', 7 );
+//define( 'FINAL_MARK_DISCREPANCY_THRESHOLD', 7 );
 
 
 ?>

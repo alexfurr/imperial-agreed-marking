@@ -213,7 +213,7 @@ class agreedMarkingCPT
 
       //Options
       $id 			= 'options_meta';
-      $title 			= 'Criteria Type';
+      $title 			= 'Assessment options';
       $drawCallback 	= array( $this, 'drawOptionsMetaBox' );
       $screen 		= 'agreed-marking';
       $context 		= 'side';
@@ -292,6 +292,7 @@ class agreedMarkingCPT
    {
        $cappedMarks = get_post_meta( $post->ID, 'cappedMarks', true );
        $useStepScale = get_post_meta( $post->ID, 'useStepScale', true );
+       $max_discrepancy = get_post_meta( $post->ID, 'max_discrepancy', true );
 
       echo 'Capped Mark Percent<br/>';
       if($cappedMarks==""){$cappedMarks = 40;}
@@ -305,6 +306,13 @@ class agreedMarkingCPT
           echo ' checked ';
       }
       echo '/>Use college stepped scale</label>';
+
+
+      echo '<hr/>';
+      echo '<label for="max_discrepancy">Maximum discrepancy allowed</label><br/>';
+      echo '<input type="input" type-"number" id="max_discrepancy" name="max_discrepancy" size="5"';
+      echo 'value="'.$max_discrepancy.'"/>%';
+
 
 
    }
@@ -390,8 +398,8 @@ class agreedMarkingCPT
          $useStepScale = $_POST['useStepScale'];
          update_post_meta( $postID, 'useStepScale', $useStepScale );
 
-
-
+         $max_discrepancy = $_POST['max_discrepancy'];
+         update_post_meta( $postID, 'max_discrepancy', $max_discrepancy );
 
 
       }

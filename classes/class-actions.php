@@ -404,6 +404,10 @@ class agreedMarkingActions
 			$wpdb->query($sql_query);
 		}
 
+        // Remove the markers and students
+        update_post_meta( $newAssignmentID, 'myStudents', array() );
+        update_post_meta( $newAssignmentID, 'cappedStudentArray', array() );
+        update_post_meta( $newAssignmentID, 'myMarkers', array() );
 
 
       $markingCriteria = agreedMarkingQUeries::getMarkingCriteriaForAdmin ( $assignmentID );

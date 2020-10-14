@@ -214,7 +214,7 @@ class agreedMarkingDraw
          $discrepancyClass = '';
          $discrepancyText = '';
          $rowClass='';
-         if($finalMarkDiscrepancy>FINAL_MARK_DISCREPANCY_THRESHOLD && $hasMarkedByYou==true)
+         if($finalMarkDiscrepancy>$max_discrepancy && $hasMarkedByYou==true)
          {
             $discrepancyClass = 'failText';
             $discrepancyText='<br/><span class="smallText">'.$finalMarkDiscrepancy.'% discrepancy<span>';
@@ -486,6 +486,8 @@ class agreedMarkingDraw
          $html.=$archivedMessage;
       }
 
+      $max_discrepancy = get_post_meta( $assignmentID, 'max_discrepancy', true );
+
 
       // Get the title
       $assignmentName = get_the_title($assignmentID);
@@ -538,11 +540,11 @@ class agreedMarkingDraw
 
       $markingDisrepancy = agreedMarkingUtils::getMarkingDiscrepancy($finalMarks);
 
-      if($markingDisrepancy>FINAL_MARK_DISCREPANCY_THRESHOLD)
+      if($markingDisrepancy>$max_discrepancy)
       {
          $html.='<div class="imperial-feedback imperial-feedback-error">';
          $html.='<strong>Marking Discrepancy of '.$markingDisrepancy.'%</strong><br/>';
-         $html.='The mark discrepancy is too high (difference >7 Marks). Please discuss with your co-marker to resolve and resubmit your amended marks.</div>';
+         $html.='The mark discrepancy is too high (difference >'.$max_discrepancy.' Marks). Please discuss with your co-marker to resolve and resubmit your amended marks.</div>';
 
       }
       else
@@ -734,7 +736,6 @@ class agreedMarkingDraw
             $html.='</div>';
 
 
-
             if($isMarkedByYou==true)
             {
 
@@ -847,6 +848,7 @@ class agreedMarkingDraw
 
       $html = '';
       $isMarker = false;
+      $feedbackText  = '';
 
       $current_user = wp_get_current_user();
       $thisUsername = $current_user->user_login;
@@ -854,7 +856,8 @@ class agreedMarkingDraw
       // Get the cap
 
       // Is the student in the cap?
-      $cappedMarks = get_post_meta( $assignmentID, 'archived', true );
+      $cappedMarks = get_post_meta( $assignmentID, 'cappedMarks', true );
+
       if($cappedMarks==""){$cappedMarks=40;}
 
       $cappedStudentArray = get_post_meta( $assignmentID, 'cappedStudentArray', true );

@@ -707,6 +707,7 @@ class agreedMarkingDraw
 
           case "radio":
           case "stepScale":
+
             $optionNumber = 1;
 
             if($itemType=="stepScale")
@@ -714,7 +715,24 @@ class agreedMarkingDraw
                 $options = agreedMarkingQueries::getStepScale();
             }
 
-            $html.='<div class="formItemRadioWrap">';
+            $radio_str='<div class="formItemRadioWrap">';
+
+            // have other people given this mark?
+            $assessor_marks_lookup = array();
+            // Create temp lookup array of the marks given for this item. Allows us to add the class of other assessor grades
+            if(array_key_exists($thisID, $savedMarks) )
+            {
+                $marks_for_this_item = $savedMarks[$thisID];
+
+                foreach ($marks_for_this_item as $temp_assessor_username => $temp_mark)
+                {
+                    // Only add the other mark if it's not THIS assessor
+                    if($temp_assessor_username<>$loggedInUsername)
+                    {
+                        $assessor_marks_lookup[$temp_mark][] = $temp_assessor_username;
+                    }
+                }
+            }
 
 
             foreach ($options as $optionValue)
@@ -731,15 +749,40 @@ class agreedMarkingDraw
                    $optionValue = $options[$optionNumber-1];
                }
 
+               $radio_str.='<label for="'.$thisRadioID.'"';
 
-               $html.='<label for="'.$thisRadioID.'">';
-               $html.='<span>'.$optionValue.'</span>';
-               $html.='<span><input required type="radio" name="'.$thisID.'" id="'.$thisRadioID.'" value="'.$optionValue.'"';
-               if($optionValue==$savedValue){$html.=' checked ';}
-               $html.='/></span></label>';
+               if(array_key_exists($optionValue, $assessor_marks_lookup) )
+               {
+                   $marksDifference = ($optionValue - $savedValue);
+                   $marksDifference = ($marksDifference *1);
+                   if($optionValue==$savedValue)
+                   {
+                       $radio_str.=' class="icl-am-radio-success" ';
+
+                   }
+                   else
+                   {
+                       $radio_str.=' class="icl-am-radio-error" ';
+
+                   }
+
+
+
+
+               }
+
+               $radio_str.='>';
+               $radio_str.='<span>'.$optionValue.'</span>';
+
+
+
+
+               $radio_str.='<span><input required type="radio" name="'.$thisID.'" id="'.$thisRadioID.'" value="'.$optionValue.'"';
+               if($optionValue==$savedValue){$radio_str.=' checked ';}
+               $radio_str.='/></span></label>';
                $optionNumber++;
             }
-            $html.='</div>';
+            $radio_str.='</div>';
 
 
             if($isMarkedByYou==true)
@@ -748,8 +791,12 @@ class agreedMarkingDraw
                //If there is a discrepenecy then Highlight this
                if(count($savedMarks)>=1 )
                {
+
+                   $saved_marks_str = '';
+
                 //  $html.='<h3>Marks from other assessors</h3>';
                   $isAgreed = agreedMarkingUtils::checkDiscrepancy($thisID, $savedMarks);
+
                   if($isAgreed==true)
                   {
                      if(isset($savedMarks[$thisID] ) )
@@ -764,7 +811,7 @@ class agreedMarkingDraw
                               $thisAssessorNameInfo = $assessors[$tempAssessorUsername];
                               $thisAssessorName = $thisAssessorNameInfo['firstName'].' '.$thisAssessorNameInfo['lastName'];
 
-                              $html.= '<div class="imperial-feedback imperial-feedback-success">Marks given by '.$thisAssessorName.' : <strong>'.$tempMarks.'</strong></div>';
+                              $saved_marks_str.= '<div class="imperial-feedback imperial-feedback-success">Marks given by '.$thisAssessorName.' : <strong>'.$tempMarks.'</strong></div>';
                            }
                         }
                      }
@@ -800,13 +847,16 @@ class agreedMarkingDraw
 
 
 
-                           $html.= '<div class="imperial-feedback '.$feedbackClass.'">Marks given by '.$thisAssessorName.' : <strong>'.$tempMarks.'</strong></div>';
+                           $saved_marks_str.= '<div class="imperial-feedback '.$feedbackClass.'">Marks given by '.$thisAssessorName.' : <strong>'.$tempMarks.'</strong></div>';
                         }
                      }
 
                   }
                }
             }
+
+
+            $html.=$radio_str.$saved_marks_str;
 
 
          break;

@@ -113,6 +113,8 @@ class agreedMarkingDraw
       $myStudentsArray = array();
 
 
+      $max_discrepancy = get_post_meta( $assignmentID, 'max_discrepancy', true );
+
 
       if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $thisUsername)==false)
       {
@@ -531,7 +533,7 @@ class agreedMarkingDraw
 
       $args = array();
       $args['assessors'] = $assessors;
-      $args['assessorUsername'] = $assessorUsername;
+      $args['assessorUsername'] = $loggedInUsername;
       $args['assignmentID'] = $assignmentID;
       $args['savedMarks'] = $savedMarks;
 
@@ -553,7 +555,7 @@ class agreedMarkingDraw
          if($assessorCount>1)
          {
             $html.='<div class="imperial-feedback imperial-feedback-success">';
-            $html.='Marking difference is <=7 Marks. No further action required</div>';
+            $html.='Marking difference is <='.$max_discrepancy.' Marks. No further action required</div>';
 
          }
 

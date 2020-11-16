@@ -495,6 +495,8 @@ class agreedMarkingDraw
       $assignmentName = get_the_title($assignmentID);
 
       $studentMeta = imperialQueries::getUserInfo($username);
+
+      $html.='<div id="agreed_marking_form_wrap">';
       $html.='<h2>'.$assignmentName.'</h2>';
       $html.='<h3>'.$studentMeta['first_name'].' '.$studentMeta['last_name'].'</h3>';
       $html.=imperialThemeDraw::drawBackButton("Back to student list", "?view=studentList&assignmentID=".$assignmentID);
@@ -655,12 +657,14 @@ class agreedMarkingDraw
       }
       else
       {
-         $html.='<input type="submit" value="Submit" class="imperial-button" id="agreedMarkingSubmitButton">';
+         $html.='<input type="submit" value="Submit" data-method="submit_agreed_form" class="imperial-button has-click-event" id="agreedMarkingSubmitButton">';
       }
 
       $html.='</form>';
 
       $html.='<p id="checkOnline"></p>';
+
+      $html.='</div>'; // End of agreed_marking_form_wrap
 
       return $html;
    }

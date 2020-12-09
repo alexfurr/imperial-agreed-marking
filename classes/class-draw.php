@@ -165,6 +165,7 @@ class agreedMarkingDraw
          // Get the scores
          $finalMarks = agreedMarkingUtils::getFinalMarks($assignmentID, $savedMarks);
 
+
          // Create blank vars for all possible marker values
          $i=1;
          while ($i<=$maxMarkers)
@@ -180,22 +181,22 @@ class agreedMarkingDraw
          {
             foreach ($finalMarks as $KEY => $VALUE)
             {
-               $varName = 'marker'.$thisMarker.'Score';
-               if($KEY<>"average"){
 
-                  $$varName = $VALUE.'%';
-                  $$varName.='<br/><span class="smallText">'.$KEY.'</span>';
-                  $thisMarker++;
-                  $tempCompareArray[] = $VALUE;
+               if($KEY<>"average" && $KEY<>"debug")
+               {
+                    $varName = 'marker'.$thisMarker.'Score';
 
+                    $$varName = $VALUE.'%';
+                    $$varName.='<br/><span class="smallText">'.$KEY.'</span>';
+                    $thisMarker++;
+                    $tempCompareArray[] = $VALUE;
                }
-               else
+               elseif($KEY=='average')
                {
                   $averageScore = $VALUE.'%';
                }
             }
          }
-
 
          $finalMarkDiscrepancy = agreedMarkingUtils::getMarkingDiscrepancy($finalMarks);
 
@@ -269,8 +270,6 @@ class agreedMarkingDraw
          $$myStrVar.='</tr>';
       }
 
-
-
       // Show those students that have been marked by you
       $html = '';
 
@@ -302,7 +301,6 @@ class agreedMarkingDraw
 
       $markedTable.=$markedByYouTable.'</table>';
       $notMarkedTable.=$notMarkedByYouTable.'</table>';
-
 
       $html = $markedTable.'<hr/>'.$notMarkedTable;
 
@@ -532,7 +530,6 @@ class agreedMarkingDraw
       }
 
 
-
       $args = array();
       $args['assessors'] = $assessors;
       $args['assessorUsername'] = $loggedInUsername;
@@ -657,7 +654,7 @@ class agreedMarkingDraw
       }
       else
       {
-         $html.='<input type="submit" value="Submit" data-method="submit_agreed_form" class="imperial-button has-click-event" id="agreedMarkingSubmitButton">';
+         $html.='<input type="submit" value="Submit" data-method="submit_agreed_form" class="imperial-button" id="agreedMarkingSubmitButton">';
       }
 
       $html.='</form>';
@@ -715,7 +712,7 @@ class agreedMarkingDraw
                 $options = agreedMarkingQueries::getStepScale();
             }
 
-            $radio_str='<div class="formItemRadioWrap">';
+            $radio_str='<div class="formItemRadioWrap" id="radio_group_'.$thisID.'">';
 
             // have other people given this mark?
             $assessor_marks_lookup = array();
@@ -765,9 +762,6 @@ class agreedMarkingDraw
                        $radio_str.=' class="icl-am-radio-error" ';
 
                    }
-
-
-
 
                }
 
@@ -889,7 +883,7 @@ class agreedMarkingDraw
 
 
          case "textarea":
-            $html.='<textarea class="agreedMarkingTextarea" name="textarea_'.$thisID.'" id="textarea_'.$thisID.'">'.$savedValue.'</textarea>';
+            $html.='<textarea class="agreedMarkingTextarea" name="textarea_'.$thisID.'" id="textarea_'.$thisID.'" required>'.$savedValue.'</textarea>';
          break;
 
       }

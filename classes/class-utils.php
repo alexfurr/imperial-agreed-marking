@@ -34,7 +34,10 @@ class agreedMarkingUtils
 
        $useStepScale = get_post_meta( $assignmentID, 'useStepScale', true );
 
-
+       // Create array for checking both assessors have marked the same amount of criteria
+       $criteria_mark_check = array();
+       // Return this as debug in case the marker has somehow missed some marks
+       $total_criteria_that_can_be_marked = 0;
 
       // Get the weightings
       $criteriaGroups = agreedMarkingQueries::getMarkingCriteria($assignmentID);
@@ -51,7 +54,11 @@ class agreedMarkingUtils
          $weighting = $criteriaGroupMeta['weighting'];
          $criteria = $criteriaGroupMeta['criteria'];
 
+
+
          $totalGroupAvailableMarks = 0;
+
+         // Get the total criteria that can be marked
 
          foreach ($criteria as $criteriaInfo)
          {
@@ -60,6 +67,9 @@ class agreedMarkingUtils
             $type = $criteriaInfo['type'];
 
             if($type<>"radio" && $type<>"stepScale" ){continue;}
+
+            $total_criteria_that_can_be_marked++;
+
 
             $criteriaOptions = $criteriaInfo['options'];
             $optionCount = 0;
@@ -99,18 +109,19 @@ class agreedMarkingUtils
 
          // Now got through the array getting the total for each assessor
          $criteriaGroupTotalMarkArray = array();
-         foreach ($tempAssessorMarksArray as $assessorUsername => $tempCriteriaAssessorMarks)
-         {
+
+        foreach ($tempAssessorMarksArray as $assessorUsername => $tempCriteriaAssessorMarks)
+        {
+            $temp_marked_count = count($tempCriteriaAssessorMarks);
+            $criteria_mark_check[$assessorUsername][] = $temp_marked_count;
             $tempTotal = 0;
             foreach ($tempCriteriaAssessorMarks as $thisMark)
             {
-
-               $tempTotal = $tempTotal + $thisMark;
+                $tempTotal = $tempTotal + $thisMark;
             }
 
             $criteriaGroupTotalMarkArray[$assessorUsername] = $tempTotal;
-         }
-
+        }
 
          // Now appl ythe weighting
          foreach ($criteriaGroupTotalMarkArray as $assessorUsername => $totalMark)
@@ -120,12 +131,12 @@ class agreedMarkingUtils
             $totalAssessorTracker[$assessorUsername][] = $tempGroupMarks;
          }
 
-
-
-
       }
 
       $finalArray = array();
+
+
+
 
       foreach($totalAssessorTracker as $assessorUsername => $groupMarks)
       {
@@ -153,6 +164,38 @@ class agreedMarkingUtils
          $finalArray['average'] = round(($totalAverage/$assessorCount), 2);
       }
 
+      // Finally add up the total amount of criteria marked by each student and check they match
+      $marked_count_array = array();
+      $old_count = '';
+      $error = '0';
+      foreach ($criteria_mark_check as $assessor => $criteria_marked)
+      {
+
+          $total_marked = 0;
+          foreach ($criteria_marked as $temp_total_marked)
+          {
+              $total_marked = $total_marked+$temp_total_marked;
+          }
+          $marked_count_array[$assessor] = $total_marked;
+          if($old_count)
+          {
+              if($total_marked<>$old_count)
+              {
+                  $error++;
+              }
+          }
+
+          $old_count = $total_marked;
+      }
+
+
+      $finalArray['debug']['marked_count'] = $marked_count_array;
+      $finalArray['debug']['error_count'] = $error;
+      $finalArray['debug']['total_available_criteria'] = $total_criteria_that_can_be_marked;
+
+
+
+
       return $finalArray;
 
    }
@@ -164,6 +207,7 @@ class agreedMarkingUtils
       // Order the array low to high
       // Remove the average
       unset($marksArray['average']);
+      unset($marksArray['debug']);
       asort($marksArray);
       $itemsCount = count($marksArray);
 
@@ -174,6 +218,7 @@ class agreedMarkingUtils
       else
       {
          $array_keys = array_keys($marksArray);
+
          // get the first item in the array
          $lowestValue = $marksArray[array_shift($array_keys)];
 

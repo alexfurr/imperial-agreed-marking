@@ -8,6 +8,7 @@ class agreedMarkingAdminDraw
       $siteURL = get_site_url();
 
       $html='';
+      $error_str = '';
       $CSVarray = array();
       $csvHeaderRow = array();
       $userCount = 0;
@@ -107,6 +108,29 @@ class agreedMarkingAdminDraw
             // Get the scores
             $finalMarks = agreedMarkingUtils::getFinalMarks($assignmentID, $savedMarks);
 
+            // Are there errors?
+            if(isset($finalMarks['debug']['error_count']) )
+            {
+
+                $error_count = $finalMarks['debug']['error_count'];
+
+                if($error_count>0)
+                {
+                    $this_mark_count = $finalMarks['debug']['marked_count'];
+
+                    $error_str.= 'Student : '.$thisUsername.' :<br/>';
+                    foreach ($this_mark_count as $KEY => $VALUE)
+                    {
+                        $error_str.=$KEY.' marked '.$VALUE.' criteria.<br/>';
+
+                    }
+                    $error_str.='<hr/>';
+
+                }
+            }
+
+
+
             $finalMark ='-';
             if(isset($finalMarks['average']) )
             {
@@ -127,7 +151,7 @@ class agreedMarkingAdminDraw
             $html.='<td class="smallText">';
             foreach ($finalMarks as $KEY => $VALUE)
             {
-               if($KEY<>"average")
+               if($KEY<>"average" && $KEY<>"debug")
                {
                   $html.=$KEY.' : '.$VALUE.'% ';
 
@@ -211,10 +235,16 @@ class agreedMarkingAdminDraw
       </script>
       ";
 
+      if($error_str)
+      {
+        $error_str = '<h3>There appear to be some missing marks for '.$error_count.' student(s)</h3><div class="imperial-feedback imperial-feedback-error">'.$error_str.'</div>';
+
+      }
+
 
       if($createCSV==false)
       {
-         return $html;
+         return $error_str.$html;
       }
       else
       {

@@ -748,21 +748,27 @@ class agreedMarkingDraw
 
                $radio_str.='<label for="'.$thisRadioID.'"';
 
-               if(array_key_exists($optionValue, $assessor_marks_lookup) )
+
+               // check to see if they have marked this student and don't show discrepencies until they have
+               if($isMarkedByYou==true)
                {
-                   $marksDifference = ($optionValue - $savedValue);
-                   $marksDifference = ($marksDifference *1);
-                   if($optionValue==$savedValue)
+
+                   if(array_key_exists($optionValue, $assessor_marks_lookup) )
                    {
-                       $radio_str.=' class="icl-am-radio-success" ';
+                       $marksDifference = ($optionValue - $savedValue);
+                       $marksDifference = ($marksDifference *1);
+                       if($optionValue==$savedValue)
+                       {
+                           $radio_str.=' class="icl-am-radio-success" ';
+
+                       }
+                       else
+                       {
+                           $radio_str.=' class="icl-am-radio-error" ';
+
+                       }
 
                    }
-                   else
-                   {
-                       $radio_str.=' class="icl-am-radio-error" ';
-
-                   }
-
                }
 
                $radio_str.='>';

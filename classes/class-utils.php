@@ -150,7 +150,8 @@ class agreedMarkingUtils
 
          }
 
-         $finalArray[$assessorUsername] = round(($thisTotalMark * 100), 2);
+       //  $finalArray[$assessorUsername] = round(($thisTotalMark * 100), 2);
+         $finalArray[$assessorUsername] = ($thisTotalMark * 100);
       }
 
       $totalAverage = 0;
@@ -163,7 +164,8 @@ class agreedMarkingUtils
 
       if($assessorCount>=1)
       {
-         $finalArray['average'] = round(($totalAverage/$assessorCount), 2);
+         // $finalArray['average'] = round(($totalAverage/$assessorCount), 2);
+          $finalArray['average'] = ($totalAverage/$assessorCount);
       }
 
       // Finally add up the total amount of criteria marked by each student and check they match
@@ -227,11 +229,11 @@ class agreedMarkingUtils
          // get the last item in the array
          $highestValue =  $marksArray[array_pop($array_keys)];
 
-         $discrepancyValue = round($highestValue-$lowestValue), 2);
+         //$discrepancyValue = round($highestValue-$lowestValue), 2);
+         $discrepancyValue = $highestValue-$lowestValue;
          return $discrepancyValue;
 
       }
-
 
    }
 

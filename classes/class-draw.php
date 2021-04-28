@@ -1074,7 +1074,8 @@ class agreedMarkingDraw
             }
             if($thisAverage)
             {
-               $thisAverage = round($thisAverage, 2);
+               // $thisAverage = round($thisAverage, 2);
+
                $html.= $thisAverage.' / '.$optionCount;
             }
             else
@@ -1100,7 +1101,7 @@ class agreedMarkingDraw
             }
             if($thisAverage)
             {
-               $thisAverage = round($thisAverage, 2);
+            //    $thisAverage = round($thisAverage, 2);
                $html.= $thisAverage.'% ';
             }
             else

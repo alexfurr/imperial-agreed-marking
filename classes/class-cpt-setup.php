@@ -230,6 +230,25 @@ class agreedMarkingCPT
          $callbackArgs
       );
 
+      //links to students and criteria from this edit page for conveinece
+      $id 			= 'link_meta';
+      $title 			= 'Criteria, Markers and Students';
+      $drawCallback 	= array( $this, 'drawLinkMetaBox' );
+      $screen 		= 'agreed-marking';
+      $context 		= 'normal';
+      $priority 		= 'default';
+      $callbackArgs 	= array();
+
+      add_meta_box(
+         $id,
+         $title,
+         $drawCallback,
+         $screen,
+         $context,
+         $priority,
+         $callbackArgs
+      );
+
       //Archive Metabox
       $id 			= 'archive_meta';
       $title 			= 'Archive Options';
@@ -284,6 +303,13 @@ class agreedMarkingCPT
       echo '<input type="text" id="releaseDate" name="releaseDate" value="'.$releaseDate.'">';
       echo '</label>';
 
+
+   }
+   function drawLinkMetaBox($post,$callbackArgs)
+   {
+       $assignment_id = $post->ID;
+       echo '<a href="options.php?page=agreed-marking-criteria&id='.$assignment_id.'">View marking criteria</a>';
+       echo '<hr/><a href="options.php?page=agreed-marking-users&id='.$assignment_id.'">View markers and students</a>';
 
    }
 

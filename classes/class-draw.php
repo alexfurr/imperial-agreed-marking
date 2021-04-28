@@ -342,12 +342,13 @@ class agreedMarkingDraw
          $current_user = wp_get_current_user();
          $thisUsername = $current_user->user_login;
 
+
       // Now go through all existing post meta and save the  info
 		$args = array(
 		'post_type' => "agreed-marking",
+        "numberposts"   => -1,
+
 		);
-
-
 
 
       $html='';
@@ -366,6 +367,7 @@ class agreedMarkingDraw
          $students = get_post_meta( $assignmentID, 'myStudents', true );
          $markers = get_post_meta( $assignmentID, 'myMarkers', true );
          $isArchived = get_post_meta( $assignmentID, 'archived', true );
+
 
 
          $showAssignment = false;
@@ -948,7 +950,6 @@ class agreedMarkingDraw
 
 
       $savedMarks = agreedMarkingQueries::getUserMarks($assignmentID, $username);
-
 
       // Get the scores
       $finalMarks = agreedMarkingUtils::getFinalMarks($assignmentID, $savedMarks);

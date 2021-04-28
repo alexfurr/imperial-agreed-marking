@@ -79,14 +79,16 @@ class agreedMarkingUtils
                $optionCount = count($criteriaOptions);
             }
 
+
             if($type=="stepScale")
             {
-                $totalGroupAvailableMarks = $totalGroupAvailableMarks+100;
+                $totalGroupAvailableMarks = $totalGroupAvailableMarks+100; // This is always out of 100
             }
             else
             {
                 $totalGroupAvailableMarks = $totalGroupAvailableMarks+$optionCount;
             }
+
 
             $criteriaID = $criteriaInfo['thisID'];
 
@@ -225,7 +227,7 @@ class agreedMarkingUtils
          // get the last item in the array
          $highestValue =  $marksArray[array_pop($array_keys)];
 
-         $discrepancyValue = $highestValue-$lowestValue;
+         $discrepancyValue = round($highestValue-$lowestValue), 2);
          return $discrepancyValue;
 
       }

@@ -157,11 +157,11 @@ class agreedMarkingQueries
       // Array of WP_User objects.
       foreach ( $myStudents as $thisUsername ) {
 
-         $userMeta = imperialQueries::getUserInfo($thisUsername);
-
-         $usernameCheck = $userMeta['username'];
-         $firstName = $userMeta['first_name'];
-         $lastName = $userMeta['last_name'];
+         $userMeta = \icl_network\user_queries::get_user_info( $thisUsername );
+         
+         $usernameCheck = $userMeta->username;
+         $firstName = $userMeta->first_name;
+         $lastName = $userMeta->last_name;
 
          if($usernameCheck<>"")
          {
@@ -229,10 +229,10 @@ class agreedMarkingQueries
       $returnArray = array();
       foreach ($usernamesArray as $thisUsername)
       {
-         $assessorInfo = imperialQueries::getUserInfo($thisUsername);
-
-         $firstName = $assessorInfo['first_name'];
-         $lastName = $assessorInfo['last_name'];
+         $assessorInfo = \icl_network\user_queries::get_user_info( $thisUsername );
+         
+         $firstName = $assessorInfo->first_name;
+         $lastName = $assessorInfo->last_name;
          $returnArray[$thisUsername] = array(
             "firstName" => $firstName,
             "lastName" => $lastName,

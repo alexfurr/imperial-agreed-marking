@@ -3,6 +3,21 @@
 class agreedMarkingAdminDraw
 {
 
+   public static function drawAdminNotice($message, $type="success")
+   {
+      $html = '<div class="notice notice-'.$type.' is-dismissible">';
+      $html.='<p><strong>'.$message.'</strong></p>';
+      $html.='<button type="button" class="notice-dismiss">';
+      $html.='<span class="screen-reader-text">Dismiss this notice.</span>';
+      $html.='</button>';
+      $html.='</div>';
+
+      return $html;
+
+   }
+   
+   
+   
    public static function drawUserTable($assignmentID, $userType, $createCSV = false)
    {
       $siteURL = get_site_url();
@@ -74,11 +89,11 @@ class agreedMarkingAdminDraw
 
          $thisUsername = strtolower($thisUsername);
          $csvRow = array();
-         $userMeta = imperialQueries::getUserInfo($thisUsername);
-
-         $usernameCheck = $userMeta['username'];
-         $firstName = $userMeta['first_name'];
-         $lastName = $userMeta['last_name'];
+         $userMeta = \icl_network\user_queries::get_user_info( $thisUsername );
+         
+         $usernameCheck = $userMeta->username;
+         $firstName = $userMeta->first_name;
+         $lastName = $userMeta->last_name;
          $fullName = $lastName.', '.$firstName;
 
          $errorClass = '';

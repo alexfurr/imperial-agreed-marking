@@ -24,18 +24,18 @@ class agreedMarkingCPT
 		add_filter( 'manage_agreed-marking_posts_columns', array( $this, 'my_custom_post_columns' ), 10, 2 );
 		add_action('manage_agreed-marking_posts_custom_column', array($this, 'customColumnContent'), 10, 2);
 
-      add_action( 'admin_menu', array( $this, 'create_AdminPages' ));
+        add_action( 'admin_menu', array( $this, 'create_AdminPages' ));
 
-      add_action( 'save_post', array($this, 'savePostMeta' ), 10 );
+        add_action( 'save_post', array($this, 'savePostMeta' ), 10 );
 
-      add_action( 'add_meta_boxes_agreed-marking', array( $this, 'addMetaBoxes' ));
+        add_action( 'add_meta_boxes_agreed-marking', array( $this, 'addMetaBoxes' ));
 
 
-      // Add duplicate options
-      add_filter( 'post_row_actions', array($this, 'custom_quick_links'), 10, 2 );
+        // Add duplicate options
+        add_filter( 'post_row_actions', array($this, 'custom_quick_links'), 10, 2 );
 
-      //Check for Duplciate
-      add_action( 'plugins_loaded', array($this, 'checkForAgreedmarkingActions') );
+        //Check for Duplciate
+        add_action( 'plugins_loaded', array($this, 'checkForAgreedmarkingActions') );
 
 
 
@@ -66,9 +66,9 @@ class agreedMarkingCPT
 			'not_found_in_trash' => 'No Marking Assignments found in Trash.'
 		);
 
-      $args = array(
+        $args = array(
 			'labels'            	=> $labels,
-         "menu_icon"          => "dashicons-yes",
+            "menu_icon"             => "dashicons-yes",
 			'public'            	=> false,
 			'exclude_from_search'	=> true,
 			'publicly_queryable' 	=> false,
@@ -89,24 +89,24 @@ class agreedMarkingCPT
 	}
 
 
-   // Remove Date Columns on projects
+    // Remove Date Columns on projects
 	function my_custom_post_columns( $columns  )
 	{
 	  	// Remove Date
 		unset(
-		$columns['date']
+            $columns['date']
 		);
 		// Remove Checkbox
 		unset(
-		$columns['cb']
+            $columns['cb']
 		);
 
-     // $columns['shortcode'] = 'Shortcode';
-      $columns['criteria'] = 'Marking Criteria';
+        // $columns['shortcode'] = 'Shortcode';
+        $columns['criteria'] = 'Marking Criteria';
 
-      $columns['users'] = 'Markers and Students';
-      $columns['assessmentDate'] = 'Assessment Date';
-      $columns['status'] = 'Status';
+        $columns['users'] = 'Markers and Students';
+        $columns['assessmentDate'] = 'Assessment Date';
+        $columns['status'] = 'Status';
 
 		return $columns;
 	}
@@ -271,40 +271,34 @@ class agreedMarkingCPT
 
    function drawMetaBox($post,$callbackArgs)
    {
-      $assessmentDate = get_post_meta( $post->ID, 'assessmentDate', true );
-      $releaseDate = get_post_meta( $post->ID, 'releaseDate', true );
+        $assessmentDate = get_post_meta( $post->ID, 'assessmentDate', true );
+        $releaseDate = get_post_meta( $post->ID, 'releaseDate', true );
 
 
-      wp_nonce_field( 'save_agreed_metabox_nonce', 'agreed_metabox_nonce' );
+        wp_nonce_field( 'save_agreed_metabox_nonce', 'agreed_metabox_nonce' );
 
-      echo '<label for="assessmentDate">Assessment Date:';
-      echo '<script>
-         jQuery(document).ready(function() {
-            jQuery("#assessmentDate").datepicker({
-               dateFormat : "yy-mm-dd"
-            });
 
-         });
-      </script>';
-      echo '<input type="text" id="assessmentDate" name="assessmentDate" value="'.$assessmentDate.'">';
-      echo '</label>';
-
-      echo '<hr/>';
-
-      echo '<label for="assessmentDate">Marks release date:';
-      echo '<script>
-         jQuery(document).ready(function() {
-            jQuery("#releaseDate").datepicker({
-               dateFormat : "yy-mm-dd"
-            });
-
-         });
-      </script>';
-      echo '<input type="text" id="releaseDate" name="releaseDate" value="'.$releaseDate.'">';
-      echo '</label>';
-
+        $form = new \imperial_form();
+        $date_assess = array(
+            "type"  => "date",
+            "id"    => "assessmentDate",
+            "label" => "Assessment Date",
+            "value" => $assessmentDate,
+        );
+        $date_release = array(
+            "type"  => "date",
+            "id"    => "releaseDate",
+            "label" => "Marks release date",
+            "value" => $releaseDate,
+        );
+        
+        echo $form->form_item( $date_assess );
+        echo '<hr/>';
+        echo $form->form_item( $date_release );
 
    }
+   
+   
    function drawLinkMetaBox($post,$callbackArgs)
    {
        $assignment_id = $post->ID;

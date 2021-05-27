@@ -33,17 +33,17 @@ $markedCount = count($savedMarks);
 if($archived==true)
 {
    $message = 'This assignment has been archived and changes to criteria are not possible.';
-   echo imperialNetworkDraw::drawAdminNotice($message, "warning");
+   echo agreedMarkingAdminDraw::drawAdminNotice($message, "warning");
 }elseif($markedCount>=1)
 {
    $message = '<span style="color:red">WARNING!</span><br/>This assignment has saved student marks.<br/>Editing or removing criteria may result in a loss of data.';
-   echo imperialNetworkDraw::drawAdminNotice($message, "warning");
+   echo agreedMarkingAdminDraw::drawAdminNotice($message, "warning");
 }
 
 if($useStepScale==true)
 {
    $message = 'This assignment uses the College stepped scale and so custom criteria scales are not possible.';
-   echo imperialNetworkDraw::drawAdminNotice($message, "warning");
+   echo agreedMarkingAdminDraw::drawAdminNotice($message, "warning");
 
 }
 

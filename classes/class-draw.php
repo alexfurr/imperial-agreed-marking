@@ -42,7 +42,8 @@ class agreedMarkingDraw
          switch ($action)
          {
             case "markStudent":
-               echo agreedMarkingActions::markStudent($assignmentID);
+               //echo agreedMarkingActions::markStudent($assignmentID);
+               agreedMarkingActions::markStudent($assignmentID);
             break;
          }
 
@@ -478,28 +479,27 @@ class agreedMarkingDraw
 
       $html = '';
 
-      $archivedMessage = imperialNetworkDraw::imperialFeedback("This assignment has been archived and changes will not be saved.", "alert");
-
+      //$archivedMessage = imperialNetworkDraw::imperialFeedback("This assignment has been archived and changes will not be saved.", "alert");
       // Is this archived?
       $isArchived = get_post_meta( $assignmentID, 'archived', true );
-
       if($isArchived==true)
       {
-         $html.=$archivedMessage;
+         //$html.=$archivedMessage;
+         \icl_network\imperial_feedback::set_feedback( "This assignment has been archived and changes will not be saved." );
       }
 
       $max_discrepancy = get_post_meta( $assignmentID, 'max_discrepancy', true );
 
-
       // Get the title
       $assignmentName = get_the_title($assignmentID);
 
-      $studentMeta = imperialQueries::getUserInfo($username);
-
+      $studentMeta = \icl_network\user_queries::get_user_info( $username );
+      
+      
       $html.='<div id="agreed_marking_form_wrap">';
       $html.='<h2>'.$assignmentName.'</h2>';
-      $html.='<h3>'.$studentMeta['first_name'].' '.$studentMeta['last_name'].'</h3>';
-      $html.=imperialThemeDraw::drawBackButton("Back to student list", "?view=studentList&assignmentID=".$assignmentID);
+      $html.='<h3>'.$studentMeta->first_name.' '.$studentMeta->last_name.'</h3>';
+      $html.= \icl_network\draw::back_button( array( 'value'=>"Back to student list", 'url'=>"?view=studentList&assignmentID=".$assignmentID ) );
       $html.='<hr/>';
 
       //$current_user = wp_get_current_user();
@@ -939,12 +939,12 @@ class agreedMarkingDraw
          $isMarker = true;
       }
 
-      $studentMeta = imperialQueries::getUserInfo($username);
+      $studentMeta = \icl_network\user_queries::get_user_info( $username );
       $html.='<h2>'.$assignmentName.'</h2>';
       $html.='<h3>'.$studentMeta['first_name'].' '.$studentMeta['last_name'].'</h3>';
       if($isMarker==true)
       {
-         $html.=imperialThemeDraw::drawBackButton("Back to student list", "?view=studentList&assignmentID=".$assignmentID);
+         $html.= \icl_network\draw::back_button( array( 'value'=>"Back to student list", 'url'=>"?view=studentList&assignmentID=".$assignmentID ) );
       }
       $html.='<hr/>';
 
@@ -961,7 +961,9 @@ class agreedMarkingDraw
       if(in_array($username, $cappedStudentArray) )
       {
          $feedbackText.= 'Your mark has been capped at '.$cappedMarks.'%';
-         $html.= imperialNetworkDraw::imperialFeedback($feedbackText, "alert");
+         //$html.= imperialNetworkDraw::imperialFeedback($feedbackText, "alert");
+         \icl_network\imperial_feedback::set_feedback( $feedbackText, "alert" );
+         
          if($finalMark>$cappedMarks)
          {
             $finalMark = $cappedMarks;
@@ -1161,7 +1163,7 @@ class agreedMarkingDraw
             {
                foreach ($thisFeedback as $tempFeedback)
                {
-                  $html.=imperialNetworkUtils::convertTextFromDB($tempFeedback).'<hr/>';
+                  $html.= \icl_network\utils::convert_text_from_db( $tempFeedback ) . '<hr/>';
                }
             }
          break;
@@ -1231,7 +1233,8 @@ class agreedMarkingDraw
 
             $feedbackText.= '<br/>Please provide feedback from the pre-selected comments.';
 
-            $html.= imperialNetworkDraw::imperialFeedback($feedbackText, "error");
+            //$html.= imperialNetworkDraw::imperialFeedback($feedbackText, "error");
+            \icl_network\imperial_feedback::set_feedback( $feedbackText, "error" );
 
          }
       }

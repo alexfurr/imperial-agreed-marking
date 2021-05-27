@@ -1,8 +1,8 @@
 <?php
 /*
 Plugin Name: Imperial Agreed Marking
-Description: Agreed Marking for two or more assessors
-Version: 0.1
+Description: Agreed Marking for two or more assessors (refactored 2021)
+Version: 2.0
 Author: Alex Furr
 License: GPL
 */
@@ -24,12 +24,5 @@ include_once( AGREED_MARKING_PATH . 'classes/class-actions.php' );
 include_once( AGREED_MARKING_PATH . 'classes/class-utils.php' );
 include_once( AGREED_MARKING_PATH . 'classes/class-export.php' );
 include_once( AGREED_MARKING_PATH . 'classes/class-adminDraw.php' );
-
-//include_once( AGREED_MARKING_PATH . 'classes/class-peer-feedback.php' );
-//include_once( AGREED_MARKING_PATH . 'classes/class-database.php' );
-//include_once( AGREED_MARKING_PATH . 'classes/class-utils.php' );
-
-//define( 'FINAL_MARK_DISCREPANCY_THRESHOLD', 7 );
-
 
 ?>

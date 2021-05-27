@@ -4,7 +4,7 @@ class agreedMarkingActions
    public static function markStudent($assignmentID)
 	{
 
-      $feedback = '';
+      //$feedback = '';
 
       // New comment Test git 4
 
@@ -77,19 +77,11 @@ class agreedMarkingActions
             $now
          ));
 
-
-
-
       }
 
+        \icl_network\imperial_feedback::set_feedback( "Marks Submitted" );
 
-
-      $feedback.= imperialNetworkDraw::imperialFeedback("Marks Submitted");
-
-
-    //  $feedback.=$feedbackReportStr;
-
-		return $feedback;
+		return;
 	}
 
 

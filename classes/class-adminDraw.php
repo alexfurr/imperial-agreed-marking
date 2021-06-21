@@ -30,7 +30,6 @@ class agreedMarkingAdminDraw
 
       $archived = get_post_meta( $assignmentID, 'archived', true );
 
-
       switch($userType)
       {
 
@@ -96,7 +95,6 @@ class agreedMarkingAdminDraw
          $firstName = $userMeta->first_name;
          $lastName = $userMeta->last_name;
          $fullName = $lastName.', '.$firstName;
-         $userType = $userMeta->user_type;
 
          $errorClass = '';
          if($usernameCheck=="")
@@ -183,6 +181,7 @@ class agreedMarkingAdminDraw
 
             }
 
+
            // Fill in any missing marker cols
            while ($thisMarkingCount<2)
            {
@@ -238,13 +237,11 @@ class agreedMarkingAdminDraw
       <script>
       jQuery(document).ready( function () {
 
-        
-         jQuery('#".$tableID."').hide();
+
          jQuery('#".$tableID."').DataTable({
             'pageLength': 50
             }
          );
-         jQuery('#".$tableID."').show();
 
 
       } );

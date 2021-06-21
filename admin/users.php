@@ -89,6 +89,7 @@ if($archived<>true)
          case "addUsers":
 
             $userType=$_POST['userType'];
+            $tempArray = array();
 
 
             if($userType=="student")
@@ -106,10 +107,7 @@ if($archived<>true)
             }
 
             // If its not an array then there must be mo existing users
-            if(!is_array($tempArray) )
-            {
-               $tempArray = array();
-            }
+
 
             $tempUploadArray = explode("\n", $newUserList);
 
@@ -173,7 +171,7 @@ switch ($view)
       $markerUsername = $_GET['markerUsername'];
       $studentUsername = $_GET['student'];
       $studentMeta = \icl_network\user_queries::get_user_info( $studentUsername );
-      
+
       $markerMeta = \icl_network\user_queries::get_user_info( $markerUsername );
 
       $markerFullname = $markerMeta->first_name.' '.$markerMeta->last_name;
@@ -190,7 +188,7 @@ switch ($view)
    case "capMarkCheck":
       $studentUsername = $_GET['username'];
       $studentMeta = \icl_network\user_queries::get_user_info( $studentUsername );
-      
+
       $studentFullname = $studentMeta->first_name.' '.$studentMeta->last_name;
       echo 'Are you sure you want to cap the marks for <strong>'.$studentFullname.'</strong> at '.$cappedMarks.'%<br/>';
       echo '<br/>';
@@ -203,7 +201,7 @@ switch ($view)
    case "uncapMarkCheck":
       $studentUsername = $_GET['username'];
       $studentMeta = \icl_network\user_queries::get_user_info( $studentUsername );
-      
+
       $studentFullname = $studentMeta->first_name.' '.$studentMeta->last_name;
       echo 'Are you sure you want to UNCAP the marks for <strong>'.$studentFullname.'</strong> <br/>';
       echo '<br/>';
@@ -240,15 +238,15 @@ switch ($view)
       $tabArray = array(
 
          array(
-            "tabTitle" => 'Students',
-            "tabID" => "studentsTab",
-            "tabContent" => $studentsContent,
+            "tab_title" => 'Students',
+            "tab_id" => "studentsTab",
+            "tab_content" => $studentsContent,
          ),
 
          array(
-            "tabTitle" => "Markers",
-            "tabID" => "markersTab",
-            "tabContent" => $markersContent,
+            "tab_title" => "Markers",
+            "tab_id" => "markersTab",
+            "tab_content" => $markersContent,
 
          ),
       );
@@ -258,9 +256,7 @@ switch ($view)
       echo '<a href="options.php?page=agreed-marking-users&id='.$assignmentID.'&myAction=downloadMarks" class="button-secondary"><i class="fas fa-download"></i> Download Marks</a>';
       echo '</div>';
 
-      echo drawResponsiveTabs($tabArray);
-
-
+      echo \imperial_tabs::draw($tabArray);
 
 
 

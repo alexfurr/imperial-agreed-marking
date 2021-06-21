@@ -15,9 +15,9 @@ class agreedMarkingAdminDraw
       return $html;
 
    }
-   
-   
-   
+
+
+
    public static function drawUserTable($assignmentID, $userType, $createCSV = false)
    {
       $siteURL = get_site_url();
@@ -44,6 +44,7 @@ class agreedMarkingAdminDraw
 
          case "student";
             $userArray = get_post_meta( $assignmentID, 'myStudents', true );
+
             $cappedStudentArray = get_post_meta( $assignmentID, 'cappedStudentArray', true );
             if(!is_array($cappedStudentArray) )
             {
@@ -90,11 +91,12 @@ class agreedMarkingAdminDraw
          $thisUsername = strtolower($thisUsername);
          $csvRow = array();
          $userMeta = \icl_network\user_queries::get_user_info( $thisUsername );
-         
+
          $usernameCheck = $userMeta->username;
          $firstName = $userMeta->first_name;
          $lastName = $userMeta->last_name;
          $fullName = $lastName.', '.$firstName;
+         $userType = $userMeta->user_type;
 
          $errorClass = '';
          if($usernameCheck=="")

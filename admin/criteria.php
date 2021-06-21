@@ -103,6 +103,7 @@ if ( $assignment ) {
         }
         ?>
     </div>
+    
     <hr>
 
     <div id="marking_ui">
@@ -140,7 +141,7 @@ if ( $assignment ) {
                 echo '<p>No Criteria found.</p>';
             }
             echo '</div>';
-            echo '<div class="button-secondary expand-collapse has-click-event ' . $button_class . '" data-callback="expand_collapse_options" data-is-open="1">Collapse / Expand All</div>';
+            echo '<div class="button-secondary expand-collapse am-has-click-event ' . $button_class . '" data-callback="expand_collapse_options" data-is-open="1">Collapse / Expand All</div>';
             echo '<div class="clear"></div>';
             ?>
 
@@ -208,7 +209,7 @@ if ( $assignment ) {
                                                <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][criteriaID]" value="<?php echo $criteriaID; ?>" />
                                                <input type="hidden" name="criteria[<?php echo $criteriaID; ?>][options][<?php echo $op_id; ?>][optionID]" value="<?php echo $op_id; ?>" />
                                            </div>
-                                            <div class="remove-option has-click-event" data-callback="remove_option" data-option-id="<?php echo $op_id; ?>" data-criteria-id="<?php echo $criteriaID; ?>" title="Remove Option">x</div>
+                                            <div class="remove-option am-has-click-event" data-callback="remove_option" data-option-id="<?php echo $op_id; ?>" data-criteria-id="<?php echo $criteriaID; ?>" title="Remove Option">x</div>
                                         </div>
                                     <?php
                                     }
@@ -216,13 +217,13 @@ if ( $assignment ) {
                                 ?>
                                 </div>
                             <div class="test123">
-                            <span class="button-secondary has-click-event" data-callback="add_new_option" data-criteria-id="<?php echo $criteriaID; ?>">+ Add Response Option</span>
-                            &nbsp;<span class="button-secondary make-numeric-scale has-click-event <?php echo $button_class; ?>" data-callback="make_numeric_scale" data-criteria-id="<?php echo $criteriaID; ?>">Create 1-10</span>
-                            &nbsp;<span class="button-secondary has-click-event" data-callback="launch_options_window" data-criteria-id="<?php echo $criteriaID; ?>">Sort Order</span>
+                            <span class="button-secondary am-has-click-event" data-callback="add_new_option" data-criteria-id="<?php echo $criteriaID; ?>">+ Add Response Option</span>
+                            &nbsp;<span class="button-secondary make-numeric-scale am-has-click-event <?php echo $button_class; ?>" data-callback="make_numeric_scale" data-criteria-id="<?php echo $criteriaID; ?>">Create 1-10</span>
+                            &nbsp;<span class="button-secondary am-has-click-event" data-callback="launch_options_window" data-criteria-id="<?php echo $criteriaID; ?>">Sort Order</span>
                             </div>
                         </div>
                         <div class="clear"></div>
-                        <div class="remove-criteria has-click-event" data-callback="remove_criteria" data-criteria-id="<?php echo $criteriaID; ?>" title="Remove Criteria">Remove</div>
+                        <div class="remove-criteria am-has-click-event" data-callback="remove_criteria" data-criteria-id="<?php echo $criteriaID; ?>" title="Remove Criteria">Remove</div>
                     </div>
             <?php
             }
@@ -235,9 +236,9 @@ if ( $assignment ) {
                 {
                 ?>
                 <div id="controls_bar">
-                    <span class="button-secondary has-click-event" data-callback="add_new_criteria">+ Add New Criteria</span>
+                    <span class="button-secondary am-has-click-event" data-callback="add_new_criteria">+ Add New Criteria</span>
                     <hr/>
-                    <input type="submit" name="save_criteria_submit" value="Save Changes" class="button-primary has-click-event" data-callback="pre_criteria_submit" />
+                    <input type="submit" name="save_criteria_submit" value="Save Changes" class="button-primary am-has-click-event" data-callback="pre_criteria_submit" />
                     <a href="options.php?page=agreed-marking-criteria&id=<?php echo $assignmentID;?>" class="button-secondary">Cancel</a>
                 </div>
                 <?php
@@ -290,7 +291,7 @@ if ( $assignment ) {
                                 <input type="hidden" name="groups[<?php echo $groupID; ?>][groupID]" value="<?php echo $groupID; ?>" />
                             </div>
 
-                            <div class="remove-group has-click-event" data-callback="remove_group" data-group-id="<?php echo $groupID; ?>" title="Remove Group">Remove</div>
+                            <div class="remove-group am-has-click-event" data-callback="remove_group" data-group-id="<?php echo $groupID; ?>" title="Remove Group">Remove</div>
                             <div class="clear"></div>
                         </div>
                     <?php
@@ -304,8 +305,8 @@ if ( $assignment ) {
 
                ?>
                <div id="controls_bar">
-                   <span class="button-secondary has-click-event" data-callback="add_new_group">+ Add New Group</span>
-                   <input type="submit" name="save_groups_submit" value="Save Changes" class="button-primary has-click-event" data-callback="pre_groups_submit" />
+                   <span class="button-secondary am-has-click-event" data-callback="add_new_group">+ Add New Group</span>
+                   <input type="submit" name="save_groups_submit" value="Save Changes" class="button-primary am-has-click-event" data-callback="pre_groups_submit" />
                </div>
     <?php
          }
@@ -315,6 +316,8 @@ if ( $assignment ) {
             <div id="deletion_data"></div>
         </form><!-- #marking_data -->
     </div><!-- #marking_ui -->
+    
+    
 <?php
 } else {
     echo '<p>Assignment not found or invalid.</p>';
@@ -348,7 +351,7 @@ echo '</pre>';
 
         //---
         add_listeners: function () {
-            jQuery('#' + AMARK.ui_wrap_id ).on( 'click', '.has-click-event', function ( e ) {
+            jQuery('#' + AMARK.ui_wrap_id ).on( 'click', '.am-has-click-event', function ( e ) {
                 AMARK.on_ui_event( e );
             });
             jQuery('#' + AMARK.ui_wrap_id ).on( 'change', '.has-change-event', function ( e ) {
@@ -402,6 +405,7 @@ echo '</pre>';
         //---
         pre_groups_submit: function ( e ) {
             AMARK.renumber_fields();
+            console.log('pre_groups_submit');
         },
 
 /*
@@ -598,7 +602,7 @@ echo '</pre>';
             html +=     '<div class="group-field">';
             html +=         '<input type="hidden" class="group-order-field" name="groups[' + new_id + '][groupOrder]" value="" />';
             html +=     '</div>';
-            html +=     '<div class="remove-group has-click-event" data-callback="remove_group" title="Remove Group">Remove</div>';
+            html +=     '<div class="remove-group am-has-click-event" data-callback="remove_group" title="Remove Group">Remove</div>';
             html +=     '<div class="clear"></div>';
             html +=     '<p><i>You can add Criteria after saving<i></p>';
             html += '</div>';
@@ -643,12 +647,12 @@ echo '</pre>';
             html +=     '<div class="options-window" id="options_window_' + new_id + '">';
             html +=         '<h2>Responses</h2>';
             html +=         '<div id="options_wrap_' + new_id + '" class="options-wrap"></div>';
-            html +=         '<span class="button-secondary has-click-event" data-callback="add_new_option" data-criteria-id="' + new_id + '">+ Add Response Option</span>';
-            html +=         '&nbsp;&nbsp;<span class="button-secondary make-numeric-scale has-click-event" data-callback="make_numeric_scale" data-criteria-id="' + new_id + '">Create 1-10</span>';
-            html +=         '&nbsp;&nbsp;<span class="button-secondary has-click-event" data-callback="launch_options_window" data-criteria-id="' + new_id + '">Sort Order</span>';
+            html +=         '<span class="button-secondary am-has-click-event" data-callback="add_new_option" data-criteria-id="' + new_id + '">+ Add Response Option</span>';
+            html +=         '&nbsp;&nbsp;<span class="button-secondary make-numeric-scale am-has-click-event" data-callback="make_numeric_scale" data-criteria-id="' + new_id + '">Create 1-10</span>';
+            html +=         '&nbsp;&nbsp;<span class="button-secondary am-has-click-event" data-callback="launch_options_window" data-criteria-id="' + new_id + '">Sort Order</span>';
             html +=     '</div>';
             html +=     '<div class="clear"></div>';
-            html +=     '<div class="remove-criteria has-click-event" data-callback="remove_criteria" title="Remove Criteria">Remove</div>';
+            html +=     '<div class="remove-criteria am-has-click-event" data-callback="remove_criteria" title="Remove Criteria">Remove</div>';
             html += '</div>';
 
 
@@ -666,7 +670,7 @@ echo '</pre>';
             html +=           '<input type="hidden" name="criteria[' + criteria_id + '][options][' + new_id + '][optionOrder]" value="" />';
             html +=           '<input type="hidden" name="criteria[' + criteria_id + '][options][' + new_id + '][criteriaID]" value="' + criteria_id + '" />';
             html +=         '</div>';
-            html +=     '<div class="remove-option has-click-event" data-callback="remove_option" data-criteria-id="' + criteria_id + '" title="Remove Option">x</div>';
+            html +=     '<div class="remove-option am-has-click-event" data-callback="remove_option" data-criteria-id="' + criteria_id + '" title="Remove Option">x</div>';
             html += '</div>';
             return html;
         },
@@ -681,7 +685,7 @@ echo '</pre>';
             html +=         '<input type="hidden" id="scroll_px" value="" />';
             html +=         '<div id="lightbox_content"></div>';
             html +=         '<div class="lightbox-controls"> ';
-            html +=             '<span class="button-primary has-click-event" data-callback="save_options_window">&nbsp;&nbsp;&nbsp; Done &nbsp;&nbsp;&nbsp;</span>';
+            html +=             '<span class="button-primary am-has-click-event" data-callback="save_options_window">&nbsp;&nbsp;&nbsp; Done &nbsp;&nbsp;&nbsp;</span>';
             html +=                 '&nbsp;';
             html +=         '</div>';
             html +=     '</div>';

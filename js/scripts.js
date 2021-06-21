@@ -11,7 +11,7 @@ var ICL_AGREED_MARKING_JS = {
 
     //---
     add_listeners: function () {
-        jQuery('#' + ICL_AGREED_MARKING_JS.wrapper_id ).on( 'click', '.has-click-event', function ( event ) {
+        jQuery('#' + ICL_AGREED_MARKING_JS.wrapper_id ).on( 'click', '.am-has-click-event', function ( event ) {
             ICL_AGREED_MARKING_JS.on_ui_event( event, this );
             event.preventDefault();
         });

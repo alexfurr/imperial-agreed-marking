@@ -238,7 +238,7 @@ class agreedMarkingAdminDraw
       <script>
       jQuery(document).ready( function () {
 
-
+        
          jQuery('#".$tableID."').hide();
          jQuery('#".$tableID."').DataTable({
             'pageLength': 50

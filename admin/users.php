@@ -91,12 +91,17 @@ if($archived<>true)
             $userType=$_POST['userType'];
             $tempArray = array();
 
-
+            
+            
+            //print_r( $userType );
             if($userType=="student")
             {
                $metaKeyName = "myStudents";
                $tempArray = get_post_meta( $assignmentID, 'myStudents', true );
                $newUserList = $_POST['studentList'];
+               
+               //print_r( $tempArray );
+               //die();
             }
 
             if($userType=="marker")
@@ -105,7 +110,11 @@ if($archived<>true)
                $tempArray = get_post_meta( $assignmentID, 'myMarkers', true );
                $newUserList = $_POST['markerList'];
             }
-
+                
+            if ( empty($tempArray) || ! is_array($tempArray) ) {
+                $tempArray = array();
+            };
+                
             // If its not an array then there must be mo existing users
 
 

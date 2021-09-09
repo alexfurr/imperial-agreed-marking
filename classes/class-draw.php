@@ -494,8 +494,8 @@ class agreedMarkingDraw
       $assignmentName = get_the_title($assignmentID);
 
       $studentMeta = \icl_network\user_queries::get_user_info( $username );
-      
-      
+
+
       $html.='<div id="agreed_marking_form_wrap">';
       $html.='<h2>'.$assignmentName.'</h2>';
       $html.='<h3>'.$studentMeta->first_name.' '.$studentMeta->last_name.'</h3>';
@@ -883,7 +883,7 @@ class agreedMarkingDraw
                $html.='<label for="'.$thisCheckboxID.'">';
                $html.='<input type="checkbox"  name="'.$thisCheckboxName.'[]" id="'.$thisCheckboxID.'" value="'.$optionID.'"';
                if($isChecked){$html.=' checked ';}
-               $html.='/>'.$optionValue.'</label>';
+               $html.='/>'.$optionValue.'</label><br/>';
 
             }
 
@@ -941,7 +941,7 @@ class agreedMarkingDraw
 
       $studentMeta = \icl_network\user_queries::get_user_info( $username );
       $html.='<h2>'.$assignmentName.'</h2>';
-      $html.='<h3>'.$studentMeta['first_name'].' '.$studentMeta['last_name'].'</h3>';
+      $html.='<h3>'.$studentMeta->first_name.' '.$studentMeta->last_name.'</h3>';
       if($isMarker==true)
       {
          $html.= \icl_network\draw::back_button( array( 'value'=>"Back to student list", 'url'=>"?view=studentList&assignmentID=".$assignmentID ) );
@@ -963,7 +963,7 @@ class agreedMarkingDraw
          $feedbackText.= 'Your mark has been capped at '.$cappedMarks.'%';
          //$html.= imperialNetworkDraw::imperialFeedback($feedbackText, "alert");
          \icl_network\imperial_feedback::set_feedback( $feedbackText, "alert" );
-         
+
          if($finalMark>$cappedMarks)
          {
             $finalMark = $cappedMarks;
@@ -1234,7 +1234,7 @@ class agreedMarkingDraw
             $feedbackText.= '<br/>Please provide feedback from the pre-selected comments.';
 
             //$html.= imperialNetworkDraw::imperialFeedback($feedbackText, "error");
-            \icl_network\imperial_feedback::set_feedback( $feedbackText, "error" );
+            echo \icl_network\draw::notification( $feedbackText, "error" );
 
          }
       }

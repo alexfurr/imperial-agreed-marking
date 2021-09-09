@@ -149,7 +149,7 @@ class agreedMarkingAdminDraw
             $finalMark ='-';
             if(isset($finalMarks['average']) )
             {
-               $finalMark = $finalMarks['average'].'%';
+               $finalMark = round($finalMarks['average'], 2).'%';
             }
 
          }
@@ -168,8 +168,7 @@ class agreedMarkingAdminDraw
             {
                if($KEY<>"average" && $KEY<>"debug")
                {
-                  $html.=$KEY.' : '.$VALUE.'% ';
-
+                  $html.=$KEY.' : '.round($VALUE, 2).'% ';
 
                   if($archived<>true)
                   {
@@ -189,8 +188,6 @@ class agreedMarkingAdminDraw
              $csvRow[] = "-";
              $thisMarkingCount++;
            }
-
-
 
             $html.='</td>';
             $html.='<td>'.$finalMark.'</td>';

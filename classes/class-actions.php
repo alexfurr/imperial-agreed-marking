@@ -39,6 +39,7 @@ class agreedMarkingActions
 
       // Add the stuff
 
+
       foreach ($_POST as $KEY => $VALUE)
       {
 
@@ -48,7 +49,7 @@ class agreedMarkingActions
              $tempCheckArray = array();
              foreach ($VALUE as $thisOptionID)
              {
-               $thisUID = $thisCriteriaID.'_'.$thisOptionID;
+             //  $thisUID = $thisCriteriaID.'_'.$thisOptionID;
 
                $tempCheckArray[] = $thisOptionID;
             }
@@ -79,7 +80,7 @@ class agreedMarkingActions
 
       }
 
-        \icl_network\imperial_feedback::set_feedback( "Marks Submitted" );
+     echo   \icl_network\draw::notification( "Marks Submitted", 'success' );
 
 		return;
 	}

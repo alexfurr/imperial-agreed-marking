@@ -254,7 +254,7 @@ class agreedMarkingDraw
             $$myStrVar.='<td><strong class="'.$discrepancyClass.'">'.$averageScore.$discrepancyText.'</strong></td>';
             $$myStrVar.='<td>';
 
-            $$myStrVar.='<a class="imperial-button" href="?view=studentReport&assignmentID='.$assignmentID.'&username='.$studentUsername.'">Preview</a>';
+            $$myStrVar.='<a class="button" href="?view=studentReport&assignmentID='.$assignmentID.'&username='.$studentUsername.'">Preview</a>';
             $$myStrVar.='</td>';
          }
          else
@@ -262,7 +262,7 @@ class agreedMarkingDraw
             $$myStrVar.='<td>';
             if(current_user_can('delete_pages') && $thisMarkingCount>=1)
             {
-               $$myStrVar.='<a class="imperial-button" href="?view=studentReport&assignmentID='.$assignmentID.'&username='.$studentUsername.'">Preview</a>';
+               $$myStrVar.='<a class="button" href="?view=studentReport&assignmentID='.$assignmentID.'&username='.$studentUsername.'">Preview</a>';
             }
             $$myStrVar.='</td>';
 
@@ -294,8 +294,8 @@ class agreedMarkingDraw
       $markedTable.='<h3>Students Marked by you</h3>';
       $notMarkedTable.='<h3>Students Not Yet Marked by you</h3>';
 
-      $markedTable.= '<table id="assignmentStudentsTable1">'.$markedTableHeader;
-      $notMarkedTable.= '<table id="assignmentStudentsTable2">'.$unMarkedTableHeader;
+      $markedTable.= '<table id="assignmentStudentsTable1" class="table">'.$markedTableHeader;
+      $notMarkedTable.= '<table id="assignmentStudentsTable2" class="table">'.$unMarkedTableHeader;
 
 
       //$html.='You have marked '.$myMarkingCount.' student(s)<hr/>';
@@ -303,7 +303,14 @@ class agreedMarkingDraw
       $markedTable.=$markedByYouTable.'</table>';
       $notMarkedTable.=$notMarkedByYouTable.'</table>';
 
-      $html = $markedTable.'<hr/>'.$notMarkedTable;
+      $html = '';
+	  $html.=\icl_network\draw::content_box_open();
+	  $html.=$markedTable;
+	  $html.=\icl_network\draw::content_box_close();
+
+	  $html.=\icl_network\draw::content_box_open();
+	  $html.=$notMarkedTable;
+	  $html.=\icl_network\draw::content_box_close();
 
       $html.='<script>
 
@@ -354,7 +361,7 @@ class agreedMarkingDraw
 
       $html='';
 		$assessments = get_posts( $args );
-      $html='<table class="imperial-table-1"><tr>';
+      $html='<table class="table is-fullwidth"><tr>';
   //    $html.='<th>Assessment Name</th><th>Assignment Date</th><th>Marks Release Date</th><th>Students</th><th>Markers</th></tr>';
       $html.='<th>Assessment Name</th><th>Assignment Date</th><th>Marks Release Date</th></tr>';
 
@@ -466,7 +473,12 @@ class agreedMarkingDraw
          return 'No assignments found';
       }
 
-      return $html;
+
+	  $return_html = '';
+	  $return_html.=\icl_network\draw::content_box_open();
+	  $return_html.=$html;
+	  $return_html.=\icl_network\draw::content_box_close();
+      return $return_html;
 
    }
 
@@ -543,11 +555,13 @@ class agreedMarkingDraw
 
       $markingDisrepancy = agreedMarkingUtils::getMarkingDiscrepancy($finalMarks);
 
+
       if($markingDisrepancy>$max_discrepancy)
       {
-         $html.='<div class="imperial-feedback imperial-feedback-error">';
-         $html.='<strong>Marking Discrepancy of '.$markingDisrepancy.'%</strong><br/>';
-         $html.='The mark discrepancy is too high (difference >'.$max_discrepancy.' Marks). Please discuss with your co-marker to resolve and resubmit your amended marks.</div>';
+
+		 $message = '<strong>Marking Discrepancy of '.$markingDisrepancy.'%</strong><br/>';
+         $message.='The mark discrepancy is too high (difference >'.$max_discrepancy.' Marks). Please discuss with your co-marker to resolve and resubmit your amended marks.';
+		 $html.=\icl_network\draw::notification($message, 'danger');
 
       }
       else
@@ -555,9 +569,8 @@ class agreedMarkingDraw
 
          if($assessorCount>1)
          {
-            $html.='<div class="imperial-feedback imperial-feedback-success">';
-            $html.='Marking difference is <='.$max_discrepancy.' Marks. No further action required</div>';
-
+            $message='Marking difference is <='.$max_discrepancy.' Marks. No further action required</div>';
+			$html.=\icl_network\draw::notification($message, 'success');
          }
 
       }
@@ -656,7 +669,7 @@ class agreedMarkingDraw
       }
       else
       {
-         $html.='<input type="submit" value="Submit" data-method="submit_agreed_form" class="imperial-button" id="agreedMarkingSubmitButton">';
+         $html.='<input type="submit" value="Submit" data-method="submit_agreed_form" class="button" id="agreedMarkingSubmitButton">';
       }
 
       $html.='</form>';

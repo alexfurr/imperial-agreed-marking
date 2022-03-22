@@ -231,7 +231,7 @@ class agreedMarkingUtils
 
          //$discrepancyValue = round($highestValue-$lowestValue), 2);
          $discrepancyValue = $highestValue-$lowestValue;
-         return $discrepancyValue;
+         return absint($discrepancyValue);
 
       }
 

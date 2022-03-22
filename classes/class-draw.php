@@ -114,7 +114,7 @@ class agreedMarkingDraw
       $myStudentsArray = array();
 
 
-      $max_discrepancy = get_post_meta( $assignmentID, 'max_discrepancy', true );
+      $max_discrepancy = absint(get_post_meta( $assignmentID, 'max_discrepancy', true ));
 
 
       if(agreedMarkingUtils::checkMarkerAccess($assignmentID, $thisUsername)==false)
@@ -200,6 +200,7 @@ class agreedMarkingDraw
          }
 
          $finalMarkDiscrepancy = agreedMarkingUtils::getMarkingDiscrepancy($finalMarks);
+
 
          // Can this user mark the student? Is max markers complete, OR have they marked it
          $allowMarking=false;

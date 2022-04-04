@@ -110,7 +110,7 @@ class agreedMarking_db {
       $sql = "CREATE TABLE $agreedMarkingCriteriaOptions (
       optionID int NOT NULL AUTO_INCREMENT,
       criteriaID int NOT NULL,
-      optionValue varchar(255),
+      optionValue text,
       optionOrder int,
       PRIMARY KEY (optionID),
       KEY criteriaID (criteriaID)

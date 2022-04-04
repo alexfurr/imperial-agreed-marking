@@ -30,6 +30,13 @@ class agreedMarkingActions
       //echo '$studentUsername = '.$studentUsername.'<br/>';
       //echo '$assignmentID = '.$assignmentID.'<br/>';
 
+      // Do not post or update if the form has not been submitted
+      $form = new \imperial_form();
+      if(!$form->submitted()) {
+          return;
+      }
+
+
       $wpdb->query( $wpdb->prepare( "DELETE FROM $agreedMarkingUserMarks WHERE
       (assignmentID = %d AND username = %s AND assessorUsername = %s)",
       $assignmentID, $studentUsername, $assessorUsername  ) );
@@ -105,6 +112,8 @@ class agreedMarkingActions
    //---
    public static function save_criteria_data ()
    {
+
+
       if ( ! isset( $_POST['criteria'] ) || ! is_array( $_POST['criteria'] ) ) {
            return;
       }
@@ -259,6 +268,7 @@ class agreedMarkingActions
    {
       global $wpdb;
       global $agreedMarkingCriteriaOptions;
+
       $option_id = ! empty( $option['optionID'] ) ? intval( $option['optionID'] ) : 0;
 
       if ( $option_id ) {

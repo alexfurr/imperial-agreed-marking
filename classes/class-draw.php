@@ -501,7 +501,7 @@ class agreedMarkingDraw
          \icl_network\imperial_feedback::set_feedback( "This assignment has been archived and changes will not be saved." );
       }
 
-      $max_discrepancy = get_post_meta( $assignmentID, 'max_discrepancy', true );
+      $max_discrepancy = absint(get_post_meta( $assignmentID, 'max_discrepancy', true ));
 
       // Get the title
       $assignmentName = get_the_title($assignmentID);

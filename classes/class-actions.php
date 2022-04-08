@@ -46,7 +46,6 @@ class agreedMarkingActions
 
       // Add the stuff
 
-
       foreach ($_POST as $KEY => $VALUE)
       {
 
@@ -72,6 +71,8 @@ class agreedMarkingActions
             $VALUE = sanitize_textarea_field( $VALUE );
          }
 
+
+
          $myFields="INSERT into $agreedMarkingUserMarks (assignmentID, username, assessorUsername, itemID, savedValue, dateSubmitted) ";
          $myFields.="VALUES (%d, %s, %s, %s, %s, %s)";
 
@@ -87,7 +88,7 @@ class agreedMarkingActions
 
       }
 
-     echo   \icl_network\draw::notification( "Marks Submitted", 'success' );
+      echo   \icl_network\draw::notification( "Marks Submitted", 'success' );
 
 		return;
 	}
